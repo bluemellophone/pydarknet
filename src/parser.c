@@ -295,7 +295,7 @@ layer parse_normalization(list *options, size_params params)
 
 layer parse_shortcut(list *options, size_params params, network net)
 {
-    char *l = option_find(options, "from");   
+    char *l = option_find(options, "from");
     int index = atoi(l);
     if(index < 0) index = params.index + index;
 
@@ -330,7 +330,7 @@ layer parse_activation(list *options, size_params params)
 
 route_layer parse_route(list *options, size_params params, network net)
 {
-    char *l = option_find(options, "layers");   
+    char *l = option_find(options, "layers");
     int len = strlen(l);
     if(!l) error("Route Layer must specify input layers");
     int n = 1;
@@ -404,8 +404,8 @@ void parse_net_options(list *options, network *net)
         net->step = option_find_int(options, "step", 1);
         net->scale = option_find_float(options, "scale", 1);
     } else if (net->policy == STEPS){
-        char *l = option_find(options, "steps");   
-        char *p = option_find(options, "scales");   
+        char *l = option_find(options, "steps");
+        char *p = option_find(options, "scales");
         if(!l || !p) error("STEPS policy must have steps and scales in cfg file");
 
         int len = strlen(l);
@@ -518,7 +518,7 @@ network parse_network_cfg(char *filename)
             params.c = l.out_c;
             params.inputs = l.outputs;
         }
-    }   
+    }
     free_list(sections);
     net.outputs = get_network_output_size(net);
     net.output = get_network_output(net);
@@ -730,6 +730,96 @@ void save_weights_upto(network net, char *filename, int cutoff)
 void save_weights(network net, char *filename)
 {
     save_weights_upto(net, filename, net.n);
+}
+
+void save_weights_upto_numpy(network net, char *filename, int cutoff)
+{
+    int i;
+    for(i = 0; i < net.n && i < cutoff; ++i){
+
+        char buff[256];
+        sprintf(buff, "%s.%d.raw", filename, i);
+        // fprintf(stderr, "Saving layer %d weights to %s\n", i, buff);
+        FILE *fp = fopen(buff, "w");
+        if(!fp) file_error(buff);
+
+        int major = 0;
+        int minor = 1;
+        int revision = 0;
+        fwrite(&major, sizeof(int), 1, fp);
+        fwrite(&minor, sizeof(int), 1, fp);
+        fwrite(&revision, sizeof(int), 1, fp);
+        fwrite(net.seen, sizeof(int), 1, fp);
+
+        layer l = net.layers[i];
+        fwrite(&l.type, sizeof(float), 1, fp);
+
+        if(l.type == CONVOLUTIONAL){
+#ifdef GPU
+            if(gpu_index >= 0){
+                pull_convolutional_layer(l);
+            }
+#endif
+            fwrite(&l.n, sizeof(float), 1, fp);
+            fwrite(&l.c, sizeof(float), 1, fp);
+            fwrite(&l.size, sizeof(float), 1, fp);
+
+            int num = l.n*l.c*l.size*l.size;
+            fwrite(l.biases, sizeof(float), l.n, fp);
+            if (l.batch_normalize){
+                fwrite(l.scales, sizeof(float), l.n, fp);
+                fwrite(l.rolling_mean, sizeof(float), l.n, fp);
+                fwrite(l.rolling_variance, sizeof(float), l.n, fp);
+            }
+            fwrite(l.filters, sizeof(float), num, fp);
+
+            fprintf(stderr, "[%3d] CONV (%d x %d x %d x %d) + %d = %d\n", i, l.n, l.c, l.size, l.size, l.n, num + l.n);
+            fprintf(stderr, "[%3d]     Check1: %0.04f, %0.04f, %0.04f, %0.04f\n", i, l.biases[0], l.biases[1], l.filters[0], l.filters[1]);
+            fprintf(stderr, "[%3d]     Check2: %f, %f, %f, %f\n", i, l.biases[0], l.biases[1], l.filters[0], l.filters[1]);
+        } if(l.type == CONNECTED){
+#ifdef GPU
+            if(gpu_index >= 0){
+                pull_connected_layer(l);
+            }
+#endif
+            fwrite(&l.outputs, sizeof(float), 1, fp);
+            fwrite(&l.inputs, sizeof(float), 1, fp);
+
+            fwrite(l.biases, sizeof(float), l.outputs, fp);
+            fwrite(l.weights, sizeof(float), l.outputs*l.inputs, fp);
+
+            fprintf(stderr, "[%3d] DENSE (%d x %d) + %d = %d\n", i, l.outputs, l.inputs, l.outputs, l.outputs * l.inputs + l.outputs);
+            fprintf(stderr, "[%3d]     Check1: %0.04f, %0.04f, %0.04f, %0.04f\n", i, l.biases[0], l.biases[1], l.weights[0], l.weights[1]);
+            fprintf(stderr, "[%3d]     Check2: %f, %f, %f, %f\n", i, l.biases[0], l.biases[1], l.weights[0], l.weights[1]);
+        } if(l.type == LOCAL){
+#ifdef GPU
+            if(gpu_index >= 0){
+                pull_local_layer(l);
+            }
+#endif
+            fwrite(&l.size, sizeof(float), 1, fp);
+            fwrite(&l.c, sizeof(float), 1, fp);
+            fwrite(&l.n, sizeof(float), 1, fp);
+            fwrite(&l.out_w, sizeof(float), 1, fp);
+            fwrite(&l.out_h, sizeof(float), 1, fp);
+            fwrite(&l.outputs, sizeof(float), 1, fp);
+
+            int locations = l.out_w*l.out_h;
+            int size = l.size*l.size*l.c*l.n*locations;
+            fwrite(l.biases, sizeof(float), l.outputs, fp);
+            fwrite(l.filters, sizeof(float), size, fp);
+
+            fprintf(stderr, "[%3d] LOCAL (%d x %d x %d x %d x (%d x %d)) + %d = %d\n", i, l.size, l.size, l.c, l.n, l.out_w, l.out_h, l.outputs, size + l.outputs);
+        } if(l.type != CONVOLUTIONAL && l.type != CONNECTED && l.type != LOCAL){
+            fprintf(stderr, "[%3d] SKIPPED: %u\n", i, l.type);
+        }
+        fclose(fp);
+    }
+}
+
+void save_weights_numpy(network net, char *filename)
+{
+    save_weights_upto_numpy(net, filename, net.n);
 }
 
 void transpose_matrix(float *a, int rows, int cols)

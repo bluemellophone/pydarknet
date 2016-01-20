@@ -358,6 +358,15 @@ void test_yolo(char *cfgfile, char *weightfile, char *filename, float thresh)
     }
 }
 
+void export_yolo_to_numpy(char *cfgfile, char *weightfile)
+{
+    network net = parse_network_cfg(cfgfile);
+    if(weightfile){
+        load_weights(&net, weightfile);
+        save_weights_numpy(net, weightfile);
+    }
+}
+
 /*
 #ifdef OPENCV
 image ipl_to_image(IplImage* src);
@@ -425,5 +434,6 @@ void run_yolo(int argc, char **argv)
     else if(0==strcmp(argv[2], "train")) train_yolo(cfg, weights);
     else if(0==strcmp(argv[2], "valid")) validate_yolo(cfg, weights);
     else if(0==strcmp(argv[2], "recall")) validate_yolo_recall(cfg, weights);
+    else if(0==strcmp(argv[2], "numpy")) export_yolo_to_numpy(cfg, weights);
     else if(0==strcmp(argv[2], "demo")) demo_yolo(cfg, weights, thresh, cam_index);
 }

@@ -9,7 +9,7 @@ float abs_mean(float *x, int n)
     int i;
     float sum = 0;
     for (i = 0; i < n; ++i){
-        sum += abs(x[i]);
+        sum += fabs(x[i]);
     }
     return sum/n;
 }
@@ -17,7 +17,7 @@ float abs_mean(float *x, int n)
 void calculate_loss(float *output, float *delta, int n, float thresh)
 {
     int i;
-    float mean = mean_array(output, n); 
+    float mean = mean_array(output, n);
     float var = variance_array(output, n);
     for(i = 0; i < n; ++i){
         if(delta[i] > mean + thresh*sqrt(var)) delta[i] = output[i];
@@ -236,7 +236,7 @@ void run_nightmare(int argc, char **argv)
     for(e = 0; e < rounds; ++e){
         fprintf(stderr, "Iteration: ");
         fflush(stderr);
-        for(n = 0; n < iters; ++n){  
+        for(n = 0; n < iters; ++n){
             fprintf(stderr, "%d, ", n);
             fflush(stderr);
             if(reconstruct){
