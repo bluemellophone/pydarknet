@@ -44,9 +44,8 @@ while True:
         b = params[:n]
         w = params[n:]
 
-        vals = (layer, b[0], b[1], w[0], w[1], )
-        print('[%3d]     Check: %0.04f, %0.04f, %0.04f, %0.04f' % vals)
-        print('[%3d]     Check2: %f, %f, %f, %f' % vals)
+        vals = (layer, b[0], b[-1], w[0], w[-1], )
+        print('[%3d]     Check: %0.011f, %0.011f, %0.011f, %0.011f' % vals)
 
         b_shape = (n, )
         w_shape = (n, c, size, size)
@@ -68,9 +67,8 @@ while True:
         b = params[:outputs]
         w = params[outputs:]
 
-        vals = (layer, b[0], b[1], w[0], w[1], )
-        print('[%3d]     Check1: %0.04f, %0.04f, %0.04f, %0.04f' % vals)
-        print('[%3d]     Check2: %f, %f, %f, %f' % vals)
+        vals = (layer, b[0], b[-1], w[0], w[-1], )
+        print('[%3d]     Check: %0.011f, %0.011f, %0.011f, %0.011f' % vals)
 
         b_shape = (outputs, )
         w_shape = (inputs, outputs)

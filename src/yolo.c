@@ -364,6 +364,7 @@ void export_yolo_to_numpy(char *cfgfile, char *weightfile)
     if(weightfile){
         load_weights(&net, weightfile);
         save_weights_numpy(net, weightfile);
+        visualize_network(net);
     }
 }
 

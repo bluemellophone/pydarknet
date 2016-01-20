@@ -774,8 +774,7 @@ void save_weights_upto_numpy(network net, char *filename, int cutoff)
             fwrite(l.filters, sizeof(float), num, fp);
 
             fprintf(stderr, "[%3d] CONV (%d x %d x %d x %d) + %d = %d\n", i, l.n, l.c, l.size, l.size, l.n, num + l.n);
-            fprintf(stderr, "[%3d]     Check1: %0.04f, %0.04f, %0.04f, %0.04f\n", i, l.biases[0], l.biases[1], l.filters[0], l.filters[1]);
-            fprintf(stderr, "[%3d]     Check2: %f, %f, %f, %f\n", i, l.biases[0], l.biases[1], l.filters[0], l.filters[1]);
+            fprintf(stderr, "[%3d]     Check: %0.011f, %0.011f, %0.011f, %0.011f\n", i, l.biases[0], l.biases[l.n - 1], l.filters[0], l.filters[num - 1]);
         } if(l.type == CONNECTED){
 #ifdef GPU
             if(gpu_index >= 0){
@@ -789,8 +788,7 @@ void save_weights_upto_numpy(network net, char *filename, int cutoff)
             fwrite(l.weights, sizeof(float), l.outputs*l.inputs, fp);
 
             fprintf(stderr, "[%3d] DENSE (%d x %d) + %d = %d\n", i, l.outputs, l.inputs, l.outputs, l.outputs * l.inputs + l.outputs);
-            fprintf(stderr, "[%3d]     Check1: %0.04f, %0.04f, %0.04f, %0.04f\n", i, l.biases[0], l.biases[1], l.weights[0], l.weights[1]);
-            fprintf(stderr, "[%3d]     Check2: %f, %f, %f, %f\n", i, l.biases[0], l.biases[1], l.weights[0], l.weights[1]);
+            fprintf(stderr, "[%3d]     Check: %0.011f, %0.011f, %0.011f, %0.011f\n", i, l.biases[0], l.biases[l.outputs - 1], l.weights[0], l.weights[l.outputs*l.inputs - 1]);
         } if(l.type == LOCAL){
 #ifdef GPU
             if(gpu_index >= 0){

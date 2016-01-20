@@ -245,7 +245,7 @@ void forward_convolutional_layer(const convolutional_layer l, network_state stat
     float *c = l.output;
 
     for(i = 0; i < l.batch; ++i){
-        im2col_cpu(state.input, l.c, l.h, l.w, 
+        im2col_cpu(state.input, l.c, l.h, l.w,
                 l.size, l.stride, l.pad, b);
         gemm(0,0,m,n,k,1,a,k,b,n,1,c,n);
         c += n*m;
@@ -254,9 +254,9 @@ void forward_convolutional_layer(const convolutional_layer l, network_state stat
 
     if(l.batch_normalize){
         if(state.train){
-            mean_cpu(l.output, l.batch, l.n, l.out_h*l.out_w, l.mean);   
-            variance_cpu(l.output, l.mean, l.batch, l.n, l.out_h*l.out_w, l.variance);   
-            normalize_cpu(l.output, l.mean, l.variance, l.batch, l.n, l.out_h*l.out_w);   
+            mean_cpu(l.output, l.batch, l.n, l.out_h*l.out_w, l.mean);
+            variance_cpu(l.output, l.mean, l.batch, l.n, l.out_h*l.out_w, l.variance);
+            normalize_cpu(l.output, l.mean, l.variance, l.batch, l.n, l.out_h*l.out_w);
         } else {
             normalize_cpu(l.output, l.rolling_mean, l.rolling_variance, l.batch, l.n, l.out_h*l.out_w);
         }
@@ -285,7 +285,7 @@ void backward_convolutional_layer(convolutional_layer l, network_state state)
 
         float *im = state.input+i*l.c*l.h*l.w;
 
-        im2col_cpu(im, l.c, l.h, l.w, 
+        im2col_cpu(im, l.c, l.h, l.w,
                 l.size, l.stride, l.pad, b);
         gemm(0,1,m,n,k,1,a,k,b,k,1,c,n);
 
