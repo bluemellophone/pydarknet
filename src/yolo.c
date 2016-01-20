@@ -310,7 +310,6 @@ void validate_yolo_recall(char *cfgfile, char *weightfile)
 
 void test_yolo(char *cfgfile, char *weightfile, char *filename, float thresh)
 {
-
     network net = parse_network_cfg(cfgfile);
     if(weightfile){
         load_weights(&net, weightfile);
@@ -341,6 +340,7 @@ void test_yolo(char *cfgfile, char *weightfile, char *filename, float thresh)
         float *X = sized.data;
         time=clock();
         float *predictions = network_predict(net, X);
+
         printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
         convert_yolo_detections(predictions, l.classes, l.n, l.sqrt, l.side, 1, 1, thresh, probs, boxes, 0);
         if (nms) do_nms_sort(boxes, probs, l.side*l.side*l.n, l.classes, nms);

@@ -8,6 +8,8 @@ path = abspath(path)
 
 layer = 0
 layer_list = []
+
+input_conv = True
 while True:
     filename = '%s.%d.raw' % (name, layer, )
     filepath = join(path, filename)
@@ -53,6 +55,12 @@ while True:
         w = np.reshape(w, w_shape)
         # print('     w.shape = %r' % (w.shape, ))
         # print('     b.shape = %r' % (b.shape, ))
+
+        if input_conv:
+            # Invert RGB filters to BGR filters
+            w = w[:, ::-1, :, :]
+            input_conv = False
+
         layer_list.append(w)
         layer_list.append(b)
     elif type_ == 2:
