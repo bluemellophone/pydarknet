@@ -249,7 +249,7 @@ char *fgetl(FILE *fp)
     }
 
     size_t curr = strlen(line);
-
+    char* dump;
     while((line[curr-1] != '\n') && !feof(fp)){
         if(curr == size-1){
             size *= 2;
@@ -261,7 +261,7 @@ char *fgetl(FILE *fp)
         }
         size_t readsize = size-curr;
         if(readsize > INT_MAX) readsize = INT_MAX-1;
-        int dump = fgets(&line[curr], readsize, fp);
+        dump = fgets(&line[curr], readsize, fp);
         curr = strlen(line);
     }
     if(line[curr-1] == '\n') line[curr-1] = '\0';
