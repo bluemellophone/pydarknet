@@ -4,7 +4,6 @@
 *.out
 *.png
 mnist/
-data/
 caffe/
 grasp/
 images/
@@ -23,5 +22,6 @@ Thumbs.db
 *.swp
 *.pyc
 *.dylib
+
 build/
 test_times.txt
