@@ -20,7 +20,7 @@ clutter_patterns = [
 def build_command():
     """ Build command run by utool.util_setup """
     if util_cplat.WIN32:
-        util_cplat.shell('mingw_build.bat')
+        raise NotImplementedError('Canno build this module on Windows, because it\'s the worst')
     else:
         util_cplat.shell('./unix_build.sh')
 
@@ -38,7 +38,7 @@ if __name__ == '__main__':
         licence=util_setup.read_license('LICENSE'),
         long_description=util_setup.parse_readme('README.md'),
         description=('Detects objects in images using Darknet'),
-        url='https://github.com/bluemellophone/darknet',
+        url='https://github.com/bluemellophone/pydarknet',
         author='Jason Parham',
         author_email='bluemellophone@gmail.com',
         clutter_patterns=clutter_patterns,
