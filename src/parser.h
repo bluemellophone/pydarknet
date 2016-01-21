@@ -2,7 +2,7 @@
 #define PARSER_H
 #include "network.h"
 
-network parse_network_cfg(char *filename);
+network parse_network_cfg(char *filename, int verbose);
 void save_network(network net, char *filename);
 void save_weights(network net, char *filename);
 void save_weights_upto(network net, char *filename, int cutoff);

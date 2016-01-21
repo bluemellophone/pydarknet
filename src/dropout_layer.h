@@ -7,7 +7,7 @@
 
 typedef layer dropout_layer;
 
-dropout_layer make_dropout_layer(int batch, int inputs, float probability);
+dropout_layer make_dropout_layer(int batch, int inputs, float probability, int verbose);
 
 void forward_dropout_layer(dropout_layer l, network_state state);
 void backward_dropout_layer(dropout_layer l, network_state state);

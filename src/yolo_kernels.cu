@@ -68,7 +68,7 @@ extern "C" void demo_yolo(char *cfgfile, char *weightfile, float thresh, int cam
 {
     demo_thresh = thresh;
     printf("YOLO demo\n");
-    net = parse_network_cfg(cfgfile);
+    net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }

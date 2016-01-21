@@ -15,6 +15,10 @@ VERBOSE_DARK = ut.get_argflag('--verbdark') or ut.VERBOSE
 QUIET_DARK   = ut.get_argflag('--quietdark') or ut.QUIET
 
 
+DEFAULT_CONFIG_URL  = 'https://www.dropbox.com/s/56pjkepp4dhjnn9/detect.yolo.5.cfg'
+DEFAULT_WEIGHTS_URL = 'https://www.dropbox.com/s/i0kxtq88yoio6to/detect.yolo.5.weights'
+
+
 #============================
 # CTypes Interface Data Types
 #============================
@@ -101,21 +105,23 @@ class Darknet_YOLO_Detector(object):
         if dark.verbose and not dark.quiet:
             print('[pydarknet py] New Darknet_YOLO Object Created')
 
-    def detect(dark, config_filepath, weight_filepath, input_gpath_list, **kwargs):
+    def detect(dark, input_gpath_list, config_filepath=None, weight_filepath=None,
+               **kwargs):
         '''
             Run detection with a given loaded forest on a list of images
 
             Args:
-                config_filepath (str): the network definition for YOLO to use
-                weight_filepath (str): the network weights for YOLO to use
                 input_gpath_list (list of str): the list of image paths that you want
                     to test
+                config_filepath (str, optional): the network definition for YOLO to use
+                weight_filepath (str, optional): the network weights for YOLO to use
 
             Kwargs:
                 sensitivity (float, optional): the sensitivity of the detector, which
                     accepts a value between 0.0 and 1.0; defaults to 0.0
                 batch_size (int, optional): the number of images to test at a single
-                    time in paralell (if None, the number of CPUs is used); defaults to None
+                    time in paralell (if None, the number of CPUs is used); defaults to
+                    None
                 verbose (bool, optional): verbose flag; defaults to object's verbose or
                     selectively enabled for this function
 
@@ -142,6 +148,12 @@ class Darknet_YOLO_Detector(object):
             ('quiet',         dark.quiet),
         ])
         params.update(kwargs)
+
+        if config_filepath in ['default', None]:
+            config_filepath = ut.grab_file_url(DEFAULT_CONFIG_URL, appname='pydarknet')
+
+        if weight_filepath in ['default', None]:
+            weight_filepath = ut.grab_file_url(DEFAULT_WEIGHTS_URL, appname='pydarknet')
 
         # Try to determine the parallel processing batch size
         if params['batch_size'] is None:

@@ -22,7 +22,7 @@ void train_yolo(char *cfgfile, char *weightfile)
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
     float avg_loss = -1;
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -135,7 +135,7 @@ void print_yolo_detections(FILE **fps, char *id, box *boxes, float **probs, int 
 
 void validate_yolo(char *cfgfile, char *weightfile)
 {
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -224,7 +224,7 @@ void validate_yolo(char *cfgfile, char *weightfile)
 
 void validate_yolo_recall(char *cfgfile, char *weightfile)
 {
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -310,7 +310,7 @@ void validate_yolo_recall(char *cfgfile, char *weightfile)
 
 void test_yolo(char *cfgfile, char *weightfile, char *filename, float thresh)
 {
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -358,7 +358,7 @@ void test_yolo(char *cfgfile, char *weightfile, char *filename, float thresh)
     }
 }
 
-void test_yolo_results(network *net, char *filename, float sensitivity, float* results, int result_index)
+void test_yolo_results(network *net, char *filename, float sensitivity, float* results, int result_index, int verbose, int quiet)
 {
     detection_layer l = net->layers[net->n-1];
     set_batch_network(net, 1);
@@ -381,7 +381,10 @@ void test_yolo_results(network *net, char *filename, float sensitivity, float* r
 
     time=clock();
     float *predictions = network_predict(*net, X);
-    printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
+    if(verbose)
+    {
+        printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
+    }
     free_image(im);
     free_image(sized);
 
@@ -432,7 +435,7 @@ void test_yolo_results(network *net, char *filename, float sensitivity, float* r
 
 void export_yolo_to_numpy(char *cfgfile, char *weightfile)
 {
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
         save_weights_numpy(net, weightfile);
@@ -448,7 +451,7 @@ image ipl_to_image(IplImage* src);
 
 void demo_swag(char *cfgfile, char *weightfile, float thresh)
 {
-network net = parse_network_cfg(cfgfile);
+network net = parse_network_cfg(cfgfile, 1);
 if(weightfile){
 load_weights(&net, weightfile);
 }

@@ -43,7 +43,7 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile)
     float avg_loss = -1;
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -121,7 +121,7 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile)
 void validate_classifier(char *datacfg, char *filename, char *weightfile)
 {
     int i = 0;
-    network net = parse_network_cfg(filename);
+    network net = parse_network_cfg(filename, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -187,7 +187,7 @@ void validate_classifier(char *datacfg, char *filename, char *weightfile)
 void validate_classifier_10(char *datacfg, char *filename, char *weightfile)
 {
     int i, j;
-    network net = parse_network_cfg(filename);
+    network net = parse_network_cfg(filename, 1);
     set_batch_network(&net, 1);
     if(weightfile){
         load_weights(&net, weightfile);
@@ -255,7 +255,7 @@ void validate_classifier_10(char *datacfg, char *filename, char *weightfile)
 void validate_classifier_multi(char *datacfg, char *filename, char *weightfile)
 {
     int i, j;
-    network net = parse_network_cfg(filename);
+    network net = parse_network_cfg(filename, 1);
     set_batch_network(&net, 1);
     if(weightfile){
         load_weights(&net, weightfile);
@@ -325,7 +325,7 @@ void validate_classifier_multi(char *datacfg, char *filename, char *weightfile)
 
 void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filename)
 {
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -372,7 +372,7 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
 void test_classifier(char *datacfg, char *cfgfile, char *weightfile, int target_layer)
 {
     int curr = 0;
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -420,7 +420,7 @@ void test_classifier(char *datacfg, char *cfgfile, char *weightfile, int target_
 
         time=clock();
         matrix pred = network_predict_data(net, val);
-        
+
         int i, j;
         if (target_layer >= 0){
             //layer l = net.layers[target_layer];

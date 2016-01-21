@@ -12,7 +12,7 @@ void train_dice(char *cfgfile, char *weightfile)
     char *base = basecfg(cfgfile);
     char *backup_directory = "/home/pjreddie/backup/";
     printf("%s\n", base);
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -47,7 +47,7 @@ void train_dice(char *cfgfile, char *weightfile)
 
 void validate_dice(char *filename, char *weightfile)
 {
-    network net = parse_network_cfg(filename);
+    network net = parse_network_cfg(filename, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -68,7 +68,7 @@ void validate_dice(char *filename, char *weightfile)
 
 void test_dice(char *cfgfile, char *weightfile, char *filename)
 {
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }

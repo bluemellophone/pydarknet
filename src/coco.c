@@ -28,7 +28,7 @@ void train_coco(char *cfgfile, char *weightfile)
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
     float avg_loss = -1;
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -159,7 +159,7 @@ int get_coco_image_id(char *filename)
 
 void validate_coco(char *cfgfile, char *weightfile)
 {
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -242,7 +242,7 @@ void validate_coco(char *cfgfile, char *weightfile)
             free_image(val_resized[t]);
         }
     }
-    fseek(fp, -2, SEEK_CUR); 
+    fseek(fp, -2, SEEK_CUR);
     fprintf(fp, "\n]\n");
     fclose(fp);
 
@@ -251,7 +251,7 @@ void validate_coco(char *cfgfile, char *weightfile)
 
 void validate_coco_recall(char *cfgfile, char *weightfile)
 {
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -339,7 +339,7 @@ void validate_coco_recall(char *cfgfile, char *weightfile)
 void test_coco(char *cfgfile, char *weightfile, char *filename, float thresh)
 {
 
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }

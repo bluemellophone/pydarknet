@@ -10,9 +10,12 @@ image get_crop_image(crop_layer l)
     return float_to_image(w,h,c,l.output);
 }
 
-crop_layer make_crop_layer(int batch, int h, int w, int c, int crop_height, int crop_width, int flip, float angle, float saturation, float exposure)
+crop_layer make_crop_layer(int batch, int h, int w, int c, int crop_height, int crop_width, int flip, float angle, float saturation, float exposure, int verbose)
 {
-    fprintf(stderr, "Crop Layer: %d x %d -> %d x %d x %d image\n", h,w,crop_height,crop_width,c);
+    if(verbose)
+    {
+        fprintf(stderr, "Crop Layer: %d x %d -> %d x %d x %d image\n", h,w,crop_height,crop_width,c);
+    }
     crop_layer l = {0};
     l.type = CROP;
     l.batch = batch;
@@ -80,12 +83,12 @@ void forward_crop_layer(const crop_layer l, network_state state)
             for(i = 0; i < l.out_h; ++i){
                 for(j = 0; j < l.out_w; ++j){
                     if(flip){
-                        col = l.w - dw - j - 1;    
+                        col = l.w - dw - j - 1;
                     }else{
                         col = j + dw;
                     }
                     row = i + dh;
-                    index = col+l.w*(row+l.h*(c + l.c*b)); 
+                    index = col+l.w*(row+l.h*(c + l.c*b));
                     l.output[count++] = state.input[index]*scale + trans;
                 }
             }

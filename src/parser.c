@@ -87,7 +87,7 @@ typedef struct size_params{
     int index;
 } size_params;
 
-deconvolutional_layer parse_deconvolutional(list *options, size_params params)
+deconvolutional_layer parse_deconvolutional(list *options, size_params params, int verbose)
 {
     int n = option_find_int(options, "filters",1);
     int size = option_find_int(options, "size",1);
@@ -114,7 +114,7 @@ deconvolutional_layer parse_deconvolutional(list *options, size_params params)
     return layer;
 }
 
-local_layer parse_local(list *options, size_params params)
+local_layer parse_local(list *options, size_params params, int verbose)
 {
     int n = option_find_int(options, "filters",1);
     int size = option_find_int(options, "size",1);
@@ -135,7 +135,7 @@ local_layer parse_local(list *options, size_params params)
     return layer;
 }
 
-convolutional_layer parse_convolutional(list *options, size_params params)
+convolutional_layer parse_convolutional(list *options, size_params params, int verbose)
 {
     int n = option_find_int(options, "filters",1);
     int size = option_find_int(options, "size",1);
@@ -152,7 +152,7 @@ convolutional_layer parse_convolutional(list *options, size_params params)
     if(!(h && w && c)) error("Layer before convolutional layer must output image.");
     int batch_normalize = option_find_int_quiet(options, "batch_normalize", 0);
 
-    convolutional_layer layer = make_convolutional_layer(batch,h,w,c,n,size,stride,pad,activation, batch_normalize);
+    convolutional_layer layer = make_convolutional_layer(batch,h,w,c,n,size,stride,pad,activation, batch_normalize, verbose);
     layer.flipped = option_find_int_quiet(options, "flipped", 0);
 
     char *weights = option_find_str(options, "weights", 0);
@@ -165,13 +165,13 @@ convolutional_layer parse_convolutional(list *options, size_params params)
     return layer;
 }
 
-connected_layer parse_connected(list *options, size_params params)
+connected_layer parse_connected(list *options, size_params params, int verbose)
 {
     int output = option_find_int(options, "output",1);
     char *activation_s = option_find_str(options, "activation", "logistic");
     ACTIVATION activation = get_activation(activation_s);
 
-    connected_layer layer = make_connected_layer(params.batch, params.inputs, output, activation);
+    connected_layer layer = make_connected_layer(params.batch, params.inputs, output, activation, verbose);
 
     char *weights = option_find_str(options, "weights", 0);
     char *biases = option_find_str(options, "biases", 0);
@@ -183,27 +183,28 @@ connected_layer parse_connected(list *options, size_params params)
     return layer;
 }
 
-softmax_layer parse_softmax(list *options, size_params params)
+softmax_layer parse_softmax(list *options, size_params params, int verbose)
 {
     int groups = option_find_int(options, "groups",1);
     softmax_layer layer = make_softmax_layer(params.batch, params.inputs, groups);
     return layer;
 }
 
-detection_layer parse_detection(list *options, size_params params)
+detection_layer parse_detection(list *options, size_params params, int verbose)
 {
     int coords = option_find_int(options, "coords", 1);
     int classes = option_find_int(options, "classes", 1);
     int rescore = option_find_int(options, "rescore", 0);
     int num = option_find_int(options, "num", 1);
     int side = option_find_int(options, "side", 7);
-    detection_layer layer = make_detection_layer(params.batch, params.inputs, num, side, classes, coords, rescore);
+    detection_layer layer = make_detection_layer(params.batch, params.inputs, num, side, classes, coords, rescore, verbose);
 
     layer.softmax = option_find_int(options, "softmax", 0);
     layer.sqrt = option_find_int(options, "sqrt", 0);
 
     layer.coord_scale = option_find_float(options, "coord_scale", 1);
-    layer.forced = option_find_int(options, "forced", 0);
+    // layer.forced = option_find_int(options, "forced", 0);
+    layer.forced = option_find_int_quiet(options, "forced", 0);
     layer.object_scale = option_find_float(options, "object_scale", 1);
     layer.noobject_scale = option_find_float(options, "noobject_scale", 1);
     layer.class_scale = option_find_float(options, "class_scale", 1);
@@ -211,7 +212,7 @@ detection_layer parse_detection(list *options, size_params params)
     return layer;
 }
 
-cost_layer parse_cost(list *options, size_params params)
+cost_layer parse_cost(list *options, size_params params, int verbose)
 {
     char *type_s = option_find_str(options, "type", "sse");
     COST_TYPE type = get_cost_type(type_s);
@@ -220,7 +221,7 @@ cost_layer parse_cost(list *options, size_params params)
     return layer;
 }
 
-crop_layer parse_crop(list *options, size_params params)
+crop_layer parse_crop(list *options, size_params params, int verbose)
 {
     int crop_height = option_find_int(options, "crop_height",1);
     int crop_width = option_find_int(options, "crop_width",1);
@@ -238,13 +239,14 @@ crop_layer parse_crop(list *options, size_params params)
 
     int noadjust = option_find_int_quiet(options, "noadjust",0);
 
-    crop_layer l = make_crop_layer(batch,h,w,c,crop_height,crop_width,flip, angle, saturation, exposure);
-    l.shift = option_find_float(options, "shift", 0);
+    crop_layer l = make_crop_layer(batch,h,w,c,crop_height,crop_width,flip, angle, saturation, exposure, verbose);
+    // l.shift = option_find_float(options, "shift", 0);
+    l.shift = option_find_float_quiet(options, "shift", 0);
     l.noadjust = noadjust;
     return l;
 }
 
-maxpool_layer parse_maxpool(list *options, size_params params)
+maxpool_layer parse_maxpool(list *options, size_params params, int verbose)
 {
     int stride = option_find_int(options, "stride",1);
     int size = option_find_int(options, "size",stride);
@@ -256,11 +258,11 @@ maxpool_layer parse_maxpool(list *options, size_params params)
     batch=params.batch;
     if(!(h && w && c)) error("Layer before maxpool layer must output image.");
 
-    maxpool_layer layer = make_maxpool_layer(batch,h,w,c,size,stride);
+    maxpool_layer layer = make_maxpool_layer(batch,h,w,c,size,stride, verbose);
     return layer;
 }
 
-avgpool_layer parse_avgpool(list *options, size_params params)
+avgpool_layer parse_avgpool(list *options, size_params params, int verbose)
 {
     int batch,w,h,c;
     w = params.w;
@@ -273,17 +275,17 @@ avgpool_layer parse_avgpool(list *options, size_params params)
     return layer;
 }
 
-dropout_layer parse_dropout(list *options, size_params params)
+dropout_layer parse_dropout(list *options, size_params params, int verbose)
 {
     float probability = option_find_float(options, "probability", .5);
-    dropout_layer layer = make_dropout_layer(params.batch, params.inputs, probability);
+    dropout_layer layer = make_dropout_layer(params.batch, params.inputs, probability, verbose);
     layer.out_w = params.w;
     layer.out_h = params.h;
     layer.out_c = params.c;
     return layer;
 }
 
-layer parse_normalization(list *options, size_params params)
+layer parse_normalization(list *options, size_params params, int verbose)
 {
     float alpha = option_find_float(options, "alpha", .0001);
     float beta =  option_find_float(options, "beta" , .75);
@@ -311,7 +313,7 @@ layer parse_shortcut(list *options, size_params params, network net)
 }
 
 
-layer parse_activation(list *options, size_params params)
+layer parse_activation(list *options, size_params params, int verbose)
 {
     char *activation_s = option_find_str(options, "activation", "linear");
     ACTIVATION activation = get_activation(activation_s);
@@ -438,7 +440,7 @@ void parse_net_options(list *options, network *net)
     net->max_batches = option_find_int(options, "max_batches", 0);
 }
 
-network parse_network_cfg(char *filename)
+network parse_network_cfg(char *filename, int verbose)
 {
     list *sections = read_cfg(filename);
     node *n = sections->front;
@@ -462,40 +464,43 @@ network parse_network_cfg(char *filename)
     free_section(s);
     while(n){
         params.index = count;
-        fprintf(stderr, "%d: ", count);
+        if (verbose)
+        {
+            fprintf(stderr, "%d: ", count);
+        }
         s = (section *)n->val;
         options = s->options;
         layer l = {0};
         if(is_convolutional(s)){
-            l = parse_convolutional(options, params);
+            l = parse_convolutional(options, params, verbose);
         }else if(is_local(s)){
-            l = parse_local(options, params);
+            l = parse_local(options, params, verbose);
         }else if(is_activation(s)){
-            l = parse_activation(options, params);
+            l = parse_activation(options, params, verbose);
         }else if(is_deconvolutional(s)){
-            l = parse_deconvolutional(options, params);
+            l = parse_deconvolutional(options, params, verbose);
         }else if(is_connected(s)){
-            l = parse_connected(options, params);
+            l = parse_connected(options, params, verbose);
         }else if(is_crop(s)){
-            l = parse_crop(options, params);
+            l = parse_crop(options, params, verbose);
         }else if(is_cost(s)){
-            l = parse_cost(options, params);
+            l = parse_cost(options, params, verbose);
         }else if(is_detection(s)){
-            l = parse_detection(options, params);
+            l = parse_detection(options, params, verbose);
         }else if(is_softmax(s)){
-            l = parse_softmax(options, params);
+            l = parse_softmax(options, params, verbose);
         }else if(is_normalization(s)){
-            l = parse_normalization(options, params);
+            l = parse_normalization(options, params, verbose);
         }else if(is_maxpool(s)){
-            l = parse_maxpool(options, params);
+            l = parse_maxpool(options, params, verbose);
         }else if(is_avgpool(s)){
-            l = parse_avgpool(options, params);
+            l = parse_avgpool(options, params, verbose);
         }else if(is_route(s)){
             l = parse_route(options, params, net);
         }else if(is_shortcut(s)){
             l = parse_shortcut(options, params, net);
         }else if(is_dropout(s)){
-            l = parse_dropout(options, params);
+            l = parse_dropout(options, params, verbose);
             l.output = net.layers[count-1].output;
             l.delta = net.layers[count-1].delta;
 #ifdef GPU
@@ -835,7 +840,7 @@ void transpose_matrix(float *a, int rows, int cols)
 
 void load_weights_upto(network *net, char *filename, int cutoff)
 {
-    fprintf(stderr, "Loading weights from %s...", filename);
+    fprintf(stderr, "\nLoading weights from %s...", filename);
     fflush(stdout);
     FILE *fp = fopen(filename, "r");
     if(!fp) file_error(filename);

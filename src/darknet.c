@@ -40,16 +40,16 @@ void average(int argc, char *argv[])
     char *cfgfile = argv[2];
     char *outfile = argv[3];
     gpu_index = -1;
-    network net = parse_network_cfg(cfgfile);
-    network sum = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
+    network sum = parse_network_cfg(cfgfile, 1);
 
-    char *weightfile = argv[4];   
+    char *weightfile = argv[4];
     load_weights(&sum, weightfile);
 
     int i, j;
     int n = argc - 5;
     for(i = 0; i < n; ++i){
-        weightfile = argv[i+5];   
+        weightfile = argv[i+5];
         load_weights(&net, weightfile);
         for(j = 0; j < net.n; ++j){
             layer l = net.layers[j];
@@ -84,7 +84,7 @@ void average(int argc, char *argv[])
 void partial(char *cfgfile, char *weightfile, char *outfile, int max)
 {
     gpu_index = -1;
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights_upto(&net, weightfile, max);
     }
@@ -95,7 +95,7 @@ void partial(char *cfgfile, char *weightfile, char *outfile, int max)
 void stacked(char *cfgfile, char *weightfile, char *outfile)
 {
     gpu_index = -1;
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -107,7 +107,7 @@ void stacked(char *cfgfile, char *weightfile, char *outfile)
 void rescale_net(char *cfgfile, char *weightfile, char *outfile)
 {
     gpu_index = -1;
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -125,7 +125,7 @@ void rescale_net(char *cfgfile, char *weightfile, char *outfile)
 void rgbgr_net(char *cfgfile, char *weightfile, char *outfile)
 {
     gpu_index = -1;
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -143,7 +143,7 @@ void rgbgr_net(char *cfgfile, char *weightfile, char *outfile)
 void normalize_net(char *cfgfile, char *weightfile, char *outfile)
 {
     gpu_index = -1;
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -166,7 +166,7 @@ void normalize_net(char *cfgfile, char *weightfile, char *outfile)
 void denormalize_net(char *cfgfile, char *weightfile, char *outfile)
 {
     gpu_index = -1;
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -183,7 +183,7 @@ void denormalize_net(char *cfgfile, char *weightfile, char *outfile)
 
 void visualize(char *cfgfile, char *weightfile)
 {
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }

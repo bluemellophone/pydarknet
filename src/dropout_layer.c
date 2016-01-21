@@ -5,9 +5,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-dropout_layer make_dropout_layer(int batch, int inputs, float probability)
+dropout_layer make_dropout_layer(int batch, int inputs, float probability, int verbose)
 {
-    fprintf(stderr, "Dropout Layer: %d inputs, %f probability\n", inputs, probability);
+    if (verbose)
+    {
+        fprintf(stderr, "Dropout Layer: %d inputs, %f probability\n", inputs, probability);
+    }
     dropout_layer l = {0};
     l.type = DROPOUT;
     l.probability = probability;
@@ -20,7 +23,7 @@ dropout_layer make_dropout_layer(int batch, int inputs, float probability)
     l.rand_gpu = cuda_make_array(l.rand, inputs*batch);
     #endif
     return l;
-} 
+}
 
 void resize_dropout_layer(dropout_layer *l, int inputs)
 {

@@ -18,9 +18,12 @@ image get_maxpool_delta(maxpool_layer l)
     return float_to_image(w,h,c,l.delta);
 }
 
-maxpool_layer make_maxpool_layer(int batch, int h, int w, int c, int size, int stride)
+maxpool_layer make_maxpool_layer(int batch, int h, int w, int c, int size, int stride, int verbose)
 {
-    fprintf(stderr, "Maxpool Layer: %d x %d x %d image, %d size, %d stride\n", h,w,c,size,stride);
+    if( verbose )
+    {
+        fprintf(stderr, "Maxpool Layer: %d x %d x %d image, %d size, %d stride\n", h,w,c,size,stride);
+    }
     maxpool_layer l = {0};
     l.type = MAXPOOL;
     l.batch = batch;

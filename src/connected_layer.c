@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-connected_layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activation)
+connected_layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activation, int verbose)
 {
     int i;
     connected_layer l = {0};
@@ -50,7 +50,11 @@ connected_layer make_connected_layer(int batch, int inputs, int outputs, ACTIVAT
     l.delta_gpu = cuda_make_array(l.delta, outputs*batch);
 #endif
     l.activation = activation;
-    fprintf(stderr, "Connected Layer: %d inputs, %d outputs\n", inputs, outputs);
+
+    if(verbose)
+    {
+        fprintf(stderr, "Connected Layer: %d inputs, %d outputs\n", inputs, outputs);
+    }
     return l;
 }
 

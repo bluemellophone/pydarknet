@@ -200,7 +200,7 @@ void run_nightmare(int argc, char **argv)
     int reconstruct = find_arg(argc, argv, "-reconstruct");
     int smooth_size = find_int_arg(argc, argv, "-smooth", 1);
 
-    network net = parse_network_cfg(cfg);
+    network net = parse_network_cfg(cfg, 1);
     load_weights(&net, weights);
     char *cfgbase = basecfg(cfg);
     char *imbase = basecfg(input);

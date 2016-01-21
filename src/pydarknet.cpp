@@ -23,14 +23,14 @@ PYTHON_DARKNET void detect(char *config_filepath, char *weight_filepath, char **
                            int num_input, float thresh, float* results_array,
                            bool verbose, bool quiet)
 {
-    network net = parse_network_cfg(config_filepath);
+    network net = parse_network_cfg(config_filepath, verbose);
     if(weight_filepath){
         load_weights(&net, weight_filepath);
     }
 
     for (int index = 0; index < num_input; ++ index)
     {
-        test_yolo_results(&net, input_gpath_array[index], thresh, results_array, index);
+        test_yolo_results(&net, input_gpath_array[index], thresh, results_array, index, (int) verbose, (int) quiet);
     }
 }
 #ifdef __cplusplus

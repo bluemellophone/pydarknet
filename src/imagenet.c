@@ -14,7 +14,7 @@ void train_imagenet(char *cfgfile, char *weightfile)
     char *base = basecfg(cfgfile);
     char *backup_directory = "/home/pjreddie/backup/";
     printf("%s\n", base);
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -84,7 +84,7 @@ void train_imagenet(char *cfgfile, char *weightfile)
 void validate_imagenet(char *filename, char *weightfile)
 {
     int i = 0;
-    network net = parse_network_cfg(filename);
+    network net = parse_network_cfg(filename, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }
@@ -143,7 +143,7 @@ void validate_imagenet(char *filename, char *weightfile)
 
 void test_imagenet(char *cfgfile, char *weightfile, char *filename)
 {
-    network net = parse_network_cfg(cfgfile);
+    network net = parse_network_cfg(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
     }

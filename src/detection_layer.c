@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-detection_layer make_detection_layer(int batch, int inputs, int n, int side, int classes, int coords, int rescore)
+detection_layer make_detection_layer(int batch, int inputs, int n, int side, int classes, int coords, int rescore, int verbose)
 {
     detection_layer l = {0};
     l.type = DETECTION;
@@ -33,7 +33,10 @@ detection_layer make_detection_layer(int batch, int inputs, int n, int side, int
     l.delta_gpu = cuda_make_array(l.delta, batch*l.outputs);
 #endif
 
-    fprintf(stderr, "Detection Layer\n");
+    if(verbose)
+    {
+        fprintf(stderr, "Detection Layer\n");
+    }
     srand(0);
 
     return l;
@@ -171,7 +174,7 @@ void forward_detection_layer(const detection_layer l, network_state state)
                 ++count;
             }
             if(l.softmax){
-                gradient_array(l.output + index + locations*l.classes, locations*l.n*(1+l.coords), 
+                gradient_array(l.output + index + locations*l.classes, locations*l.n*(1+l.coords),
                         LOGISTIC, l.delta + index + locations*l.classes);
             }
         }
