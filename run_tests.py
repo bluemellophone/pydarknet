@@ -19,11 +19,12 @@ def test_pydarknet():
 
     dark = Darknet_YOLO_Detector()
     config_filepath = abspath(join('cfg', 'yolo.cfg'))
-    weight_filepath = abspath(join('yolo', 'yolo.5.weights'))
+    weight_filepath = abspath(join('_test', 'yolo.5.weights'))
     input_gpath_list = [
-        abspath(join('test.jpg')),
-        abspath(join('test.jpg')),
+        abspath(join('_test', 'test_%05d.jpg' % (i, )))
+        for i in range(1, 76)
     ]
+    input_gpath_list = input_gpath_list[:5]
     results = dark.detect(config_filepath, weight_filepath, input_gpath_list)
     print(list(results))
     return locals()

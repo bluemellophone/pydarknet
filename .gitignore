@@ -21,7 +21,7 @@ ehthumbs.db
 Icon?
 Thumbs.db
 *.swp
-_test
 *.pyc
 *.dylib
 build/
+test_times.txt
