@@ -344,7 +344,7 @@ void test_yolo(char *cfgfile, char *weightfile, char *filename, float thresh)
         printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
         convert_yolo_detections(predictions, l.classes, l.n, l.sqrt, l.side, 1, 1, thresh, probs, boxes, 0);
         if (nms) do_nms_sort(boxes, probs, l.side*l.side*l.n, l.classes, nms);
-        draw_detections(im, l.side*l.side*l.n, thresh, boxes, probs, voc_names, voc_labels, 5);
+        draw_detections(im, l.side*l.side*l.n, thresh, boxes, probs, voc_names, voc_labels, l.classes);
         show_image(im, "predictions");
 
         show_image(sized, "resized");
@@ -355,6 +355,78 @@ void test_yolo(char *cfgfile, char *weightfile, char *filename, float thresh)
         cvDestroyAllWindows();
 #endif
         if (filename) break;
+    }
+}
+
+void test_yolo_results(network *net, char *filename, float sensitivity, float* results, int result_index)
+{
+    detection_layer l = net->layers[net->n-1];
+    set_batch_network(net, 1);
+    srand(2222222);
+    clock_t time;
+    char buff[256];
+    char *input = buff;
+    int i, j, prob_offset, offset;
+    float nms=.5;
+    int num = l.side*l.side*l.n;
+    box *boxes = calloc(num, sizeof(box));
+    float **probs = calloc(num, sizeof(float *));
+    for(j = 0; j < num; ++j) probs[j] = calloc(l.classes, sizeof(float *));
+
+    strncpy(input, filename, 256);
+
+    image im = load_image_color(input,0,0);
+    image sized = resize_image(im, net->w, net->h);
+    float *X = sized.data;
+
+    time=clock();
+    float *predictions = network_predict(*net, X);
+    printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
+    free_image(im);
+    free_image(sized);
+
+    convert_yolo_detections(predictions, l.classes, l.n, l.sqrt, l.side, 1, 1, sensitivity, probs, boxes, 0);
+    if (nms) do_nms_sort(boxes, probs, num, l.classes, nms);
+
+    int result_length = num * (l.classes + 4);
+    int result_offset = result_index * result_length;
+
+    for(i = 0; i < num; ++i)
+    {
+        for(j = 0; j < l.classes; ++j)
+        {
+            results[result_offset + i * l.classes + j] = probs[i][j];
+        }
+    }
+
+    float left, right, top, bot, width, height;
+    box b;
+    prob_offset = num * l.classes;
+    for(i = 0; i < num; ++i)
+    {
+        offset = prob_offset + i * 4;
+
+        b = boxes[i];
+        left  = (b.x-b.w/2.)*im.w;
+        right = (b.x+b.w/2.)*im.w;
+        top   = (b.y-b.h/2.)*im.h;
+        bot   = (b.y+b.h/2.)*im.h;
+
+        if(left < 0) left = 0;
+        if(right > im.w-1) right = im.w-1;
+        if(top < 0) top = 0;
+        if(bot > im.h-1) bot = im.h-1;
+
+        width = right - left;
+        height = bot - top;
+
+        if(width < 0) width = 0;
+        if(height < 0) height = 0;
+
+        results[result_offset + offset + 0] = left;
+        results[result_offset + offset + 1] = top;
+        results[result_offset + offset + 2] = width;
+        results[result_offset + offset + 3] = height;
     }
 }
 

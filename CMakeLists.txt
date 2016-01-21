@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 #######################################
 project(pydarknet)
 set(CMAKE_BUILD_TYPE "Release")
+set(APPLE On)
+set(CUDA Off)
 
 if (APPLE)
     #MacPorts
@@ -16,27 +18,38 @@ message(STATUS "Checking OpenCV")
 find_package( OpenCV REQUIRED )
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-#######################################
-if(APPLE AND CLANG2)
-    # Add flags to support clang2
-    message("APPLE + CLANG2: Adding stdlib flags for clang")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libstdc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lstdc++ -stdlib=libstdc++")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lstdc++ -stdlib=libstdc++")
-endif()
+# if (CUDA)
+#     find_package( CUDA REQUIRED )
+#     set(
+#         CUDA_NVCC_FLAGS
+#         ${CUDA_NVCC_FLAGS}
+#         --gpu-architecture=compute_20 --gpu-code=compute_20
+#     )
+# endif()
 
 #######################################
 
-set(SOURCE_FILES
-    src/CRForestDetector.cpp
-    src/CRPatch.cpp
-    src/CRTree.cpp
-    src/HoG.cpp)
+file(GLOB SOURCE_FILES
+    "src/*.c"
+)
+
+# file(GLOB CUDA_SOURCE_FILES
+#     "src/*.cu"
+# )
 
 add_library(pydarknet SHARED
-	src/pydarknet.cpp
-	${SOURCE_FILES})
+    src/pydarknet.cpp
+	${SOURCE_FILES}
+)
+
+# if (CUDA)
+#     cuda_add_library(pydarknetcuda SHARED
+#         src/pydarknet.cpp
+#         ${CUDA_SOURCE_FILES}
+#     )
+# endif()
 
 #######################################
-target_link_libraries(pydarknet ${OpenCV_LIBS})
+target_link_libraries(pydarknet
+    ${OpenCV_LIBS}
+)

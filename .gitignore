@@ -21,6 +21,7 @@ ehthumbs.db
 Icon?
 Thumbs.db
 *.swp
-test.*jpg
-yolo/
-test/
+_test
+*.pyc
+*.dylib
+build/
