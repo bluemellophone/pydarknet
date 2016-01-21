@@ -845,13 +845,14 @@ void load_weights_upto(network *net, char *filename, int cutoff)
     FILE *fp = fopen(filename, "r");
     if(!fp) file_error(filename);
 
+    int dump;
     int major;
     int minor;
     int revision;
-    fread(&major, sizeof(int), 1, fp);
-    fread(&minor, sizeof(int), 1, fp);
-    fread(&revision, sizeof(int), 1, fp);
-    fread(net->seen, sizeof(int), 1, fp);
+    dump = fread(&major, sizeof(int), 1, fp);
+    dump = fread(&minor, sizeof(int), 1, fp);
+    dump = fread(&revision, sizeof(int), 1, fp);
+    dump = fread(net->seen, sizeof(int), 1, fp);
 
     int i;
     for(i = 0; i < net->n && i < cutoff; ++i){
