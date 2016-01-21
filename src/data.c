@@ -760,6 +760,7 @@ data load_cifar10_data(char *filename)
             X.vals[i][j] = (double)bytes[j+1];
         }
     }
+    dump = dump;
     translate_data_rows(d, -128);
     scale_data_rows(d, 1./128);
     //normalize_data_rows(d);
@@ -815,6 +816,7 @@ data load_all_cifar10()
         }
         fclose(fp);
     }
+    dump = dump;
     //normalize_data_rows(d);
     translate_data_rows(d, -128);
     scale_data_rows(d, 1./128);

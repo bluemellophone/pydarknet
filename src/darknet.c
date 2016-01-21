@@ -28,6 +28,7 @@ void change_rate(char *filename, float scale, float add)
     if(!fp) file_error(filename);
     float rate = 0;
     int dump = fread(&rate, sizeof(float), 1, fp);
+    dump = dump;
     printf("Scaling learning rate from %f to %f\n", rate, rate*scale+add);
     rate = rate*scale + add;
     fseek(fp, 0, SEEK_SET);

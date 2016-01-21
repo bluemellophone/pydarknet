@@ -910,6 +910,7 @@ void load_weights_upto(network *net, char *filename, int cutoff)
 #endif
         }
     }
+    dump = dump;
     fprintf(stderr, "Done!\n");
     fclose(fp);
 }
