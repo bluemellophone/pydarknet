@@ -261,7 +261,7 @@ char *fgetl(FILE *fp)
         }
         size_t readsize = size-curr;
         if(readsize > INT_MAX) readsize = INT_MAX-1;
-        fgets(&line[curr], readsize, fp);
+        int dump = fgets(&line[curr], readsize, fp);
         curr = strlen(line);
     }
     if(line[curr-1] == '\n') line[curr-1] = '\0';
@@ -424,7 +424,7 @@ float mag_array(float *a, int n)
     int i;
     float sum = 0;
     for(i = 0; i < n; ++i){
-        sum += a[i]*a[i];   
+        sum += a[i]*a[i];
     }
     return sqrt(sum);
 }

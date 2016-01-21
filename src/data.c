@@ -496,7 +496,7 @@ data load_data_compare(int n, char **paths, int m, int classes, int w, int h)
         while(fscanf(fp2, "%d %f", &id, &iou) == 2){
             if (d.y.vals[i][2*id + 1] < iou) d.y.vals[i][2*id + 1] = iou;
         }
-        
+
         for (j = 0; j < classes; ++j){
             if (d.y.vals[i][2*j] > .5 &&  d.y.vals[i][2*j+1] < .5){
                 d.y.vals[i][2*j] = 1;
@@ -523,7 +523,7 @@ data load_data_swag(char **paths, int n, int classes, float jitter)
 {
     int index = rand_r(&data_seed)%n;
     char *random_path = paths[index];
-    
+
     image orig = load_image_color(random_path, 0, 0);
     int h = orig.h;
     int w = orig.w;
@@ -748,11 +748,12 @@ data load_cifar10_data(char *filename)
     d.X = X;
     d.y = y;
 
+    int dump;
     FILE *fp = fopen(filename, "rb");
     if(!fp) file_error(filename);
     for(i = 0; i < 10000; ++i){
         unsigned char bytes[3073];
-        fread(bytes, 1, 3073, fp);
+        dump = fread(bytes, 1, 3073, fp);
         int class = bytes[0];
         y.vals[i][class] = 1;
         for(j = 0; j < X.cols; ++j){
@@ -797,7 +798,7 @@ data load_all_cifar10()
     d.X = X;
     d.y = y;
 
-
+    int dump;
     for(b = 0; b < 5; ++b){
         char buff[256];
         sprintf(buff, "data/cifar10/data_batch_%d.bin", b+1);
@@ -805,7 +806,7 @@ data load_all_cifar10()
         if(!fp) file_error(buff);
         for(i = 0; i < 10000; ++i){
             unsigned char bytes[3073];
-            fread(bytes, 1, 3073, fp);
+            dump = fread(bytes, 1, 3073, fp);
             int class = bytes[0];
             y.vals[i+b*10000][class] = 1;
             for(j = 0; j < X.cols; ++j){

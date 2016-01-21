@@ -860,13 +860,13 @@ void load_weights_upto(network *net, char *filename, int cutoff)
         if (l.dontload) continue;
         if(l.type == CONVOLUTIONAL){
             int num = l.n*l.c*l.size*l.size;
-            fread(l.biases, sizeof(float), l.n, fp);
+            dump = fread(l.biases, sizeof(float), l.n, fp);
             if (l.batch_normalize && (!l.dontloadscales)){
-                fread(l.scales, sizeof(float), l.n, fp);
-                fread(l.rolling_mean, sizeof(float), l.n, fp);
-                fread(l.rolling_variance, sizeof(float), l.n, fp);
+                dump = fread(l.scales, sizeof(float), l.n, fp);
+                dump = fread(l.rolling_mean, sizeof(float), l.n, fp);
+                dump = fread(l.rolling_variance, sizeof(float), l.n, fp);
             }
-            fread(l.filters, sizeof(float), num, fp);
+            dump = fread(l.filters, sizeof(float), num, fp);
             if (l.flipped) {
                 transpose_matrix(l.filters, l.c*l.size*l.size, l.n);
             }
@@ -878,8 +878,8 @@ void load_weights_upto(network *net, char *filename, int cutoff)
         }
         if(l.type == DECONVOLUTIONAL){
             int num = l.n*l.c*l.size*l.size;
-            fread(l.biases, sizeof(float), l.n, fp);
-            fread(l.filters, sizeof(float), num, fp);
+            dump = fread(l.biases, sizeof(float), l.n, fp);
+            dump = fread(l.filters, sizeof(float), num, fp);
 #ifdef GPU
             if(gpu_index >= 0){
                 push_deconvolutional_layer(l);
@@ -887,8 +887,8 @@ void load_weights_upto(network *net, char *filename, int cutoff)
 #endif
         }
         if(l.type == CONNECTED){
-            fread(l.biases, sizeof(float), l.outputs, fp);
-            fread(l.weights, sizeof(float), l.outputs*l.inputs, fp);
+            dump = fread(l.biases, sizeof(float), l.outputs, fp);
+            dump = fread(l.weights, sizeof(float), l.outputs*l.inputs, fp);
             if(major > 1000 || minor > 1000){
                 transpose_matrix(l.weights, l.inputs, l.outputs);
             }
@@ -901,8 +901,8 @@ void load_weights_upto(network *net, char *filename, int cutoff)
         if(l.type == LOCAL){
             int locations = l.out_w*l.out_h;
             int size = l.size*l.size*l.c*l.n*locations;
-            fread(l.biases, sizeof(float), l.outputs, fp);
-            fread(l.filters, sizeof(float), size, fp);
+            dump = fread(l.biases, sizeof(float), l.outputs, fp);
+            dump = fread(l.filters, sizeof(float), size, fp);
 #ifdef GPU
             if(gpu_index >= 0){
                 push_local_layer(l);
