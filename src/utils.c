@@ -264,6 +264,7 @@ char *fgetl(FILE *fp)
         dump = fgets(&line[curr], readsize, fp);
         curr = strlen(line);
     }
+    dump = dump;
     if(line[curr-1] == '\n') line[curr-1] = '\0';
 
     return line;
