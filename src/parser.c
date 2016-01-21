@@ -840,7 +840,7 @@ void transpose_matrix(float *a, int rows, int cols)
 
 void load_weights_upto(network *net, char *filename, int cutoff)
 {
-    fprintf(stderr, "\nLoading weights from %s...", filename);
+    fprintf(stderr, "Loading weights from %s...", filename);
     fflush(stdout);
     FILE *fp = fopen(filename, "r");
     if(!fp) file_error(filename);

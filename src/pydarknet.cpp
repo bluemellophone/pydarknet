@@ -23,6 +23,15 @@ PYTHON_DARKNET void detect(char *config_filepath, char *weight_filepath, char **
                            int num_input, float thresh, float* results_array,
                            bool verbose, bool quiet)
 {
+    if (! quiet)
+    {
+        #ifndef GPU
+            printf("Using CPU\n");
+        #else
+            printf("Using GPU (CUDA)\n");
+        #endif
+
+    }
     network net = parse_network_cfg(config_filepath, verbose);
     if(weight_filepath){
         load_weights(&net, weight_filepath);
