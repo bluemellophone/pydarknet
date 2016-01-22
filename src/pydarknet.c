@@ -26,7 +26,8 @@ PYTHON_DARKNET void detect(char *config_filepath, char *weight_filepath, char **
         load_weights(&net, weight_filepath);
     }
 
-    for (int index = 0; index < num_input; ++ index)
+    int index;
+    for (index = 0; index < num_input; ++ index)
     {
         test_yolo_results(&net, input_gpath_array[index], thresh, results_array, index, verbose, quiet);
     }
