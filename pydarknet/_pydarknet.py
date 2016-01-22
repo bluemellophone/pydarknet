@@ -239,7 +239,7 @@ class Darknet_YOLO_Detector(object):
                         'width'      : int(np.around(bbox[2])),
                         'height'     : int(np.around(bbox[3])),
                         'class'      : class_label,
-                        'confidence' : class_confidence,
+                        'confidence' : float(class_confidence),
                     }
                     result_list_.append(result_dict)
 
