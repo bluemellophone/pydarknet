@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 project(pydarknet)
 set(CMAKE_BUILD_TYPE "Release")
 set(APPLE On)
-set(CUDA Off)
+set(CUDA On)
 
 set(CFLAGS -Wall -O3)
 
