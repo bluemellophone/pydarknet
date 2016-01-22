@@ -22,7 +22,7 @@ def test_pydarknet():
         abspath(join('_test', 'test_%05d.jpg' % (i, )))
         for i in range(1, 76)
     ]
-    input_gpath_list = input_gpath_list[:5]
+    # input_gpath_list = input_gpath_list[:5]
 
     results_list = dark.detect(input_gpath_list)
     for filename, result_list in results_list:

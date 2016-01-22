@@ -176,15 +176,15 @@ class Darknet_YOLO_Detector(object):
         params.update(kwargs)
 
         # Try to determine the parallel processing batch size
-        # if params['batch_size'] is None:
-        #     try:
-        #         cpu_count = multiprocessing.cpu_count()
-        #         if not params['quiet']:
-        #             print('[pydarknet py] Detecting with %d CPUs' % (cpu_count, ))
-        #         params['batch_size'] = cpu_count
-        #     except:
-        #         params['batch_size'] = 128
-        params['batch_size'] = 64
+        if params['batch_size'] is None:
+            # try:
+            #     cpu_count = multiprocessing.cpu_count()
+            #     if not params['quiet']:
+            #         print('[pydarknet py] Detecting with %d CPUs' % (cpu_count, ))
+            #     params['batch_size'] = cpu_count
+            # except:
+            #     params['batch_size'] = 128
+            params['batch_size'] = 32
 
         params['verbose'] = int(params['verbose'])
         params['quiet'] = int(params['quiet'])
