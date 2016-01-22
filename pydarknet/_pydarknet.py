@@ -62,8 +62,8 @@ METHODS['detect'] = ([
     C_INT,           # num_input
     C_FLOAT,         # sensitivity
     NP_ARRAY_FLOAT,  # results_array
-    C_BOOL,          # verbose
-    C_BOOL,          # quiet
+    C_INT,           # verbose
+    C_INT,           # quiet
 ], None)
 
 CLASS_LIST = [
@@ -165,6 +165,9 @@ class Darknet_YOLO_Detector(object):
                 params['batch_size'] = 128
             except:
                 params['batch_size'] = 128
+
+        params['verbose'] = int(params['verbose'])
+        params['quiet'] = int(params['quiet'])
 
         # Data integrity
         assert params['sensitivity'] >= 0 and params['sensitivity'] <= 1.0, \

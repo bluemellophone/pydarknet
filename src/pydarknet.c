@@ -12,7 +12,7 @@ PYTHON_DARKNET void detect(char *config_filepath, char *weight_filepath, char **
                            int num_input, float thresh, float* results_array,
                            int verbose, int quiet)
 {
-    if (! quiet)
+    if ( quiet == 0)
     {
         #ifdef GPU
             printf("Using GPU (CUDA)\n");
