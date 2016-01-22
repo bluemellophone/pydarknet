@@ -1,27 +1,16 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
 
 #include "pydarknet.h"
-
-using namespace std;
-
-typedef unsigned char uint8;
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include "network.h"
 #include "parser.h"
 #include "yolo.h"
+
+typedef unsigned char uint8;
 
 #define PYTHON_DARKNET extern DARKNET_DETECTOR_EXPORT
 
 PYTHON_DARKNET void detect(char *config_filepath, char *weight_filepath, char **input_gpath_array,
                            int num_input, float thresh, float* results_array,
-                           bool verbose, bool quiet)
+                           int verbose, int quiet)
 {
     if (! quiet)
     {
@@ -39,9 +28,6 @@ PYTHON_DARKNET void detect(char *config_filepath, char *weight_filepath, char **
 
     for (int index = 0; index < num_input; ++ index)
     {
-        test_yolo_results(&net, input_gpath_array[index], thresh, results_array, index, (int) verbose, (int) quiet);
+        test_yolo_results(&net, input_gpath_array[index], thresh, results_array, index, verbose, quiet);
     }
 }
-#ifdef __cplusplus
-}
-#endif
