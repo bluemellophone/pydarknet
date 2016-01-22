@@ -21,6 +21,9 @@ find_package( OpenCV REQUIRED )
 add_definitions(-DOPENCV)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
+message(STATUS "Checking Threads")
+find_package( Threads REQUIRED )
+
 if (CUDA)
     message(STATUS "Checking CUDA")
     find_package( CUDA REQUIRED )
@@ -62,6 +65,7 @@ if (CUDA)
         ${OpenCV_LIBS}
         ${CUDA_LIBS}
         ${CUDA_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
         cuda
         cudart
         cublas
@@ -70,6 +74,7 @@ if (CUDA)
 else ()
     target_link_libraries(pydarknet
         ${OpenCV_LIBS}
+        ${CMAKE_THREAD_LIBS_INIT}
     )
 endif ()
 
