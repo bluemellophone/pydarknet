@@ -1,14 +1,22 @@
 #################################
 echo 'Removing old build'
-rm -rf build
-rm -rf CMakeFiles
-rm -rf CMakeCache.txt
-rm -rf cmake_install.cmake
+#rm -rf build
+#rm -rf CMakeFiles
+#rm -rf CMakeCache.txt
+#rm -rf cmake_install.cmake
+
+python2.7 -c "import utool as ut; print('keeping build dir' if ut.get_argflag('--no-rmbuild') else ut.delete('build'))" $@
 #################################
 echo 'Creating new build'
-mkdir build
+mkdir -p build
 cd build
 #################################
+
+if [[ "$(which nvcc)" == "" ]]; then
+    export CMAKE_CUDA=Off
+else
+    export CMAKE_CUDA=On
+fi
 
 export PYEXE=$(which python2.7)
 if [[ "$VIRTUAL_ENV" == ""  ]]; then
@@ -25,6 +33,9 @@ if [[ '$OSTYPE' == 'darwin'* ]]; then
 else
     export CONFIG="-DCMAKE_BUILD_TYPE='Release' -DCMAKE_INSTALL_PREFIX=$LOCAL_PREFIX -DOpenCV_DIR=$LOCAL_PREFIX/share/OpenCV"
 fi
+export CONFIG="$CONFIG -DCUDA=$CMAKE_CUDA"
+echo "$CONFIG"
+
 cmake $CONFIG -G 'Unix Makefiles' ..
 #################################
 echo 'Building with make'

@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 #######################################
 project(pydarknet)
 set(CMAKE_BUILD_TYPE "Release")
-set(APPLE On)
-set(CUDA Off)
+#set(APPLE On)
+option(CUDA "build with cuda" Off)
 
 set(CFLAGS -Wall -O3)
 
@@ -28,6 +28,7 @@ if (CUDA)
     message(STATUS "Checking CUDA")
     find_package( CUDA REQUIRED )
     add_definitions(-DGPU)
+    message(${CUDA_INCLUDE_DIRS})
     include_directories(${CUDA_INCLUDE_DIRS})
     include_directories('/usr/local/cuda/include')
     list(APPEND CUDA_NVCC_FLAGS --gpu-architecture=compute_20 --gpu-code=compute_20 --compiler-options ${CFLAGS})
