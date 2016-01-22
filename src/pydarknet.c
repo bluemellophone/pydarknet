@@ -14,10 +14,10 @@ PYTHON_DARKNET void detect(char *config_filepath, char *weight_filepath, char **
 {
     if (! quiet)
     {
-        #ifndef GPU
-            printf("Using CPU\n");
-        #else
+        #ifdef GPU
             printf("Using GPU (CUDA)\n");
+        #else
+            printf("Using CPU\n");
         #endif
 
     }
