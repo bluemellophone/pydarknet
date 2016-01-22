@@ -383,7 +383,7 @@ void test_yolo_results(network *net, char *filename, float sensitivity, float* r
     float *predictions = network_predict(*net, X);
     if(verbose)
     {
-        printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
+        printf("[pydarknet c] %s: Predicted in %f seconds.\n", input, sec(clock()-time));
     }
     free_image(im);
     free_image(sized);

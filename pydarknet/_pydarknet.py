@@ -64,7 +64,7 @@ METHODS['detect'] = ([
     NP_ARRAY_FLOAT,  # results_array
     C_INT,           # verbose
     C_INT,           # quiet
-], None)
+], C_FLOAT)
 
 CLASS_LIST = [
     'elephant_savanna',
@@ -195,12 +195,13 @@ class Darknet_YOLO_Detector(object):
                 _cast_list_to_c(ensure_bytes_strings(input_gpath_list_), C_CHAR),
                 num_images,
             ] + list(params.values())
-            DARKNET_CLIB.detect(*params_list)
+            load_time = DARKNET_CLIB.detect(*params_list)
             results_list = params['results_array']
             conclude = time.time()
             results_list = results_list.reshape( (num_images, -1) )
             if not params['quiet']:
-                print('[pydarknet py] Took %r seconds to compute %d images' % (conclude - begin, num_images, ))
+                print('[pydarknet py] Took %r seconds to load' % (load_time, ))
+                print('[pydarknet py] Took %r seconds to compute %d images' % (conclude - begin - load_time, num_images, ))
             for input_gpath, result_list in zip(input_gpath_list_, results_list):
                 probs_list, bbox_list = np.split(result_list, [PROB_RESULT_LENGTH])
                 assert probs_list.shape[0] == PROB_RESULT_LENGTH and bbox_list.shape[0] == BBOX_RESULT_LENGTH
