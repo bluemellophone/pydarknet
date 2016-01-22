@@ -23,6 +23,7 @@ def test_pydarknet():
         for i in range(1, 76)
     ]
     input_gpath_list = input_gpath_list[:5]
+
     results_list = dark.detect(input_gpath_list)
     for filename, result_list in results_list:
         print(filename)

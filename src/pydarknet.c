@@ -9,37 +9,46 @@ typedef unsigned char uint8;
 
 #define PYTHON_DARKNET extern DARKNET_DETECTOR_EXPORT
 
-PYTHON_DARKNET float detect(char *config_filepath, char *weight_filepath, char **input_gpath_array,
-                           int num_input, float thresh, float* results_array,
-                           int verbose, int quiet)
+PYTHON_DARKNET network* init(char *config_filepath, char *weight_filepath, int verbose, int quiet)
 {
     if ( quiet == 0)
     {
         #ifdef GPU
-            printf("Using GPU (CUDA)\n");
+            printf("[pydarknet c] Using GPU (CUDA)\n");
         #else
-            printf("Using CPU\n");
+            printf("[pydarknet c] Using CPU\n");
         #endif
 
     }
 
-    clock_t time = clock();
     printf("[pydarknet c] Building model...");
     fflush(stdout);
     network net = parse_network_cfg(config_filepath, verbose);
+
+    network* holder = malloc(sizeof *holder);
+    if (holder == NULL) {
+        /* failed to allocate, handle error here */
+    } else {
+        memcpy(holder, &net, sizeof *holder);
+    }
+
     printf("Done!\n[pydarknet c] ");
     fflush(stdout);
     if(weight_filepath){
         load_weights(&net, weight_filepath);
     }
-    float load_time = sec(clock() - time);
 
-    printf("[pydarknet c] Performing inference on %d images\n", num_input);
+    return holder;
+}
+
+PYTHON_DARKNET void detect(network *net, char **input_gpath_array,
+                           int num_input, float thresh, float* results_array,
+                           int verbose, int quiet)
+{
+    printf("\n[pydarknet c] Performing inference on %d images\n", num_input);
     int index;
     for (index = 0; index < num_input; ++ index)
     {
-        test_yolo_results(&net, input_gpath_array[index], thresh, results_array, index, verbose, quiet);
+        test_yolo_results(net, input_gpath_array[index], thresh, results_array, index, verbose, quiet);
     }
-
-    return load_time;
 }

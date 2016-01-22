@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 # Standard
 from collections import OrderedDict as odict
-import multiprocessing
+# import multiprocessing
 import ctypes as C
 from six.moves import zip, range
 # Scientific
@@ -55,16 +55,22 @@ IMPORTANT:
 
 METHODS = {}
 
-METHODS['detect'] = ([
+METHODS['init'] = ([
     C_CHAR,          # config_filepath
     C_CHAR,          # weight_filepath
+    C_INT,           # verbose
+    C_INT,           # quiet
+], C_OBJ)
+
+METHODS['detect'] = ([
+    C_OBJ,           # network
     C_ARRAY_CHAR,    # input_gpath_array
     C_INT,           # num_input
     C_FLOAT,         # sensitivity
     NP_ARRAY_FLOAT,  # results_array
     C_INT,           # verbose
     C_INT,           # quiet
-], C_FLOAT)
+], None)
 
 CLASS_LIST = [
     'elephant_savanna',
@@ -90,7 +96,8 @@ DARKNET_CLIB = _load_c_shared_library(METHODS)
 #=================================
 class Darknet_YOLO_Detector(object):
 
-    def __init__(dark, verbose=VERBOSE_DARK, quiet=QUIET_DARK):
+    def __init__(dark, config_filepath=None, weight_filepath=None,
+                 verbose=VERBOSE_DARK, quiet=QUIET_DARK):
         '''
             Create the C object for the PyDarknet YOLO detector.
 
@@ -100,13 +107,32 @@ class Darknet_YOLO_Detector(object):
             Returns:
                 detector (object): the Darknet YOLO Detector object
         '''
+
+        if config_filepath in ['default', None]:
+            config_filepath = ut.grab_file_url(DEFAULT_CONFIG_URL, appname='pydarknet')
+
+        if weight_filepath in ['default', None]:
+            weight_filepath = ut.grab_file_url(DEFAULT_WEIGHTS_URL, appname='pydarknet')
+
         dark.verbose = verbose
         dark.quiet = quiet
+
+        begin = time.time()
+        params_list = [
+            config_filepath,
+            weight_filepath,
+            verbose,
+            quiet,
+        ]
+        dark.net = DARKNET_CLIB.init(*params_list)
+        conclude = time.time()
+        if not dark.quiet:
+            print('[pydarknet py] Took %r seconds to load' % (conclude - begin, ))
+
         if dark.verbose and not dark.quiet:
             print('[pydarknet py] New Darknet_YOLO Object Created')
 
-    def detect(dark, input_gpath_list, config_filepath=None, weight_filepath=None,
-               **kwargs):
+    def detect(dark, input_gpath_list, **kwargs):
         '''
             Run detection with a given loaded forest on a list of images
 
@@ -149,22 +175,16 @@ class Darknet_YOLO_Detector(object):
         ])
         params.update(kwargs)
 
-        if config_filepath in ['default', None]:
-            config_filepath = ut.grab_file_url(DEFAULT_CONFIG_URL, appname='pydarknet')
-
-        if weight_filepath in ['default', None]:
-            weight_filepath = ut.grab_file_url(DEFAULT_WEIGHTS_URL, appname='pydarknet')
-
         # Try to determine the parallel processing batch size
-        if params['batch_size'] is None:
-            try:
-                cpu_count = multiprocessing.cpu_count()
-                if not params['quiet']:
-                    print('[pydarknet py] Detecting with %d CPUs' % (cpu_count, ))
-                # params['batch_size'] = cpu_count
-                params['batch_size'] = 128
-            except:
-                params['batch_size'] = 128
+        # if params['batch_size'] is None:
+        #     try:
+        #         cpu_count = multiprocessing.cpu_count()
+        #         if not params['quiet']:
+        #             print('[pydarknet py] Detecting with %d CPUs' % (cpu_count, ))
+        #         params['batch_size'] = cpu_count
+        #     except:
+        #         params['batch_size'] = 128
+        params['batch_size'] = 64
 
         params['verbose'] = int(params['verbose'])
         params['quiet'] = int(params['quiet'])
@@ -190,18 +210,16 @@ class Darknet_YOLO_Detector(object):
             params['results_array'] = np.empty(num_images * RESULT_LENGTH, dtype=C_FLOAT)
             # Make the params_list
             params_list = [
-                config_filepath,
-                weight_filepath,
+                dark.net,
                 _cast_list_to_c(ensure_bytes_strings(input_gpath_list_), C_CHAR),
                 num_images,
             ] + list(params.values())
-            load_time = DARKNET_CLIB.detect(*params_list)
+            DARKNET_CLIB.detect(*params_list)
             results_list = params['results_array']
             conclude = time.time()
             results_list = results_list.reshape( (num_images, -1) )
             if not params['quiet']:
-                print('[pydarknet py] Took %r seconds to load' % (load_time, ))
-                print('[pydarknet py] Took %r seconds to compute %d images' % (conclude - begin - load_time, num_images, ))
+                print('[pydarknet py] Took %r seconds to compute %d images' % (conclude - begin, num_images, ))
             for input_gpath, result_list in zip(input_gpath_list_, results_list):
                 probs_list, bbox_list = np.split(result_list, [PROB_RESULT_LENGTH])
                 assert probs_list.shape[0] == PROB_RESULT_LENGTH and bbox_list.shape[0] == BBOX_RESULT_LENGTH
