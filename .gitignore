@@ -22,6 +22,7 @@ Thumbs.db
 *.swp
 *.pyc
 lib*.*
+*.egg-info/
 
 build/
 test_times.txt

@@ -18,6 +18,7 @@ def test_pydarknet():
     """
 
     dark = Darknet_YOLO_Detector()
+
     input_gpath_list = [
         abspath(join('_test', 'test_%05d.jpg' % (i, )))
         for i in range(1, 76)
