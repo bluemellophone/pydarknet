@@ -35,16 +35,16 @@ extern "C" void draw_yolo(image im, int num, float thresh, box *boxes, float **p
 // static float fps = 0;
 // static float demo_thresh = 0;
 
-void *fetch_in_thread(void *ptr)
-{
-    cv::Mat frame_m;
-    cap >> frame_m;
-    IplImage frame = frame_m;
-    in = ipl_to_image(&frame);
-    rgbgr_image(in);
-    in_s = resize_image(in, net.w, net.h);
-    return 0;
-}
+// void *fetch_in_thread(void *ptr)
+// {
+//     cv::Mat frame_m;
+//     cap >> frame_m;
+//     IplImage frame = frame_m;
+//     in = ipl_to_image(&frame);
+//     rgbgr_image(in);
+//     in_s = resize_image(in, net.w, net.h);
+//     return 0;
+// }
 
 // void *detect_in_thread(void *ptr)
 // {
