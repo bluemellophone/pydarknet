@@ -126,7 +126,6 @@ void train_yolo_custom(network *net, char *train_images, char *backup_directory,
     //while(i*imgs < N*120){
     while(get_current_batch(*net) < net->max_batches){
         i += 1;
-        printf("%d\n", i);
         time=clock();
         pthread_join(load_thread, 0);
         train = buffer;
@@ -138,6 +137,7 @@ void train_yolo_custom(network *net, char *train_images, char *backup_directory,
         float loss = train_network(*net, train);
         if (avg_loss < 0) avg_loss = loss;
         avg_loss = avg_loss*.9 + loss*.1;
+
 
         printf("%d: %f, %f avg, %f rate, %lf seconds, %d images\n", i, loss, avg_loss, get_current_rate(*net), sec(clock()-time), i*imgs);
         if(i%1000==0 || i == 600){
