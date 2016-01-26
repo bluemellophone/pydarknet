@@ -23,17 +23,17 @@ extern "C" void draw_yolo(image im, int num, float thresh, box *boxes, float **p
 // extern "C" char *voc_names[];
 // extern "C" image voc_labels[];
 
-static float **probs;
-static box *boxes;
-static network net;
-static image in   ;
-static image in_s ;
-static image det  ;
-static image det_s;
-static image disp ;
-static cv::VideoCapture cap;
-static float fps = 0;
-static float demo_thresh = 0;
+// static float **probs;
+// static box *boxes;
+// static network net;
+// static image in   ;
+// static image in_s ;
+// static image det  ;
+// static image det_s;
+// static image disp ;
+// static cv::VideoCapture cap;
+// static float fps = 0;
+// static float demo_thresh = 0;
 
 void *fetch_in_thread(void *ptr)
 {
