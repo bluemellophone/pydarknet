@@ -86,6 +86,11 @@
 
 void train_yolo_custom(network *net, char *train_images, char *backup_directory, char *weight_filepath, int verbose, int quiet)
 {
+    #ifndef GPU
+        printf("[pydarknet c train] Cannot train the network using CPU\n");
+        return;
+    #endif
+
     srand(time(0));
     data_seed = time(0);
     float avg_loss = -1;
@@ -123,12 +128,9 @@ void train_yolo_custom(network *net, char *train_images, char *backup_directory,
         i += 1;
         printf("%d\n", i);
         time=clock();
-        printf("LOAD\n");
         pthread_join(load_thread, 0);
-        printf("LOADED\n");
         train = buffer;
         load_thread = load_data_in_thread(args);
-        printf("LOADED2\n");
 
         printf("Loaded: %lf seconds\n", sec(clock()-time));
 

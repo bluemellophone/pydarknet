@@ -295,7 +295,7 @@ class Darknet_YOLO_Detector(object):
             num_images,
         ] + list(params.values())
         DARKNET_CLIB.train(*params_list)
-        weight_filepath = params_list['weight_filepath']
+        weight_filepath = params['weight_filepath']
 
         if not params['quiet']:
             print('\n\n[pydarknet py] *************************************')
@@ -475,6 +475,8 @@ def test_pydarknet():
         >>> result = test_pydarknet()
         >>> print(result)
     """
+    import ibeis
+    from ibeis.ibsfuncs import export_to_xml
 
     dark = Darknet_YOLO_Detector()
 
@@ -489,9 +491,6 @@ def test_pydarknet():
         print(filename)
         for result in result_list:
             print('    Found: %r' % (result, ))
-
-    import ibeis
-    from ibeis.ibsfuncs import export_to_xml
 
     # ibs database from mtest
     ibs = ibeis.opendb(db='PZ_MTEST')
