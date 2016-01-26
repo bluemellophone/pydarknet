@@ -19,17 +19,21 @@ def test_pydarknet():
 
     dark = Darknet_YOLO_Detector()
 
-    input_gpath_list = [
-        abspath(join('_test', 'test_%05d.jpg' % (i, )))
-        for i in range(1, 76)
-    ]
-    # input_gpath_list = input_gpath_list[:5]
+    voc_path = '/Datasets/PZ_MTEST/_ibsdb/LearningData/'
+    weight_path = '/Users/bluemellophone/Desktop/weights'
+    dark.train(voc_path, weight_path)
 
-    results_list = dark.detect(input_gpath_list)
-    for filename, result_list in results_list:
-        print(filename)
-        for result in result_list:
-            print('    Found: %r' % (result, ))
+    # input_gpath_list = [
+    #     abspath(join('_test', 'test_%05d.jpg' % (i, )))
+    #     for i in range(1, 76)
+    # ]
+    # # input_gpath_list = input_gpath_list[:5]
+
+    # results_list = dark.detect(input_gpath_list)
+    # for filename, result_list in results_list:
+    #     print(filename)
+    #     for result in result_list:
+    #         print('    Found: %r' % (result, ))
 
     return locals()
 
