@@ -8,11 +8,11 @@ import utool as ut
 def test_pydarknet():
     r"""
     CommandLine:
-        python -m test_pydarknet --test-test_pydarknet
+        python run_tests.py --test-test_pydarknet
 
     Example:
         >>> # ENABLE_DOCTEST
-        >>> from test_pydarknet import *  # NOQA
+        >>> from run_tests import *  # NOQA
         >>> result = test_pydarknet()
         >>> print(result)
     """
@@ -35,6 +35,13 @@ def test_pydarknet():
 
 
 if __name__ == '__main__':
-    test_locals = ut.run_test(test_pydarknet)
-    exec(ut.execstr_dict(test_locals, 'test_locals'))
-    exec(ut.ipython_execstr())
+    r"""
+    CommandLine:
+        export PYTHONPATH=$PYTHONPATH:/home/joncrall/code/pydarknet
+        python ~/code/pydarknet/run_tests.py
+        python ~/code/pydarknet/run_tests.py --allexamples
+    """
+    import multiprocessing
+    multiprocessing.freeze_support()  # for win32
+    import utool as ut  # NOQA
+    ut.doctest_funcs()
