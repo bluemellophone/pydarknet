@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 #######################################
 project(pydarknet)
 set(CMAKE_BUILD_TYPE "Release")
-#set(APPLE On)
+set(APPLE On)
 option(CUDA "build with cuda" Off)
 
 set(CFLAGS -Wall -O2)
@@ -28,7 +28,6 @@ if (CUDA)
     message(STATUS "Checking CUDA")
     find_package( CUDA REQUIRED )
     add_definitions(-DGPU)
-    message("CUDA_INCLUDE_DIRS = ${CUDA_INCLUDE_DIRS}")
     include_directories(${CUDA_INCLUDE_DIRS})
     list(APPEND CUDA_NVCC_FLAGS --gpu-architecture=compute_20 --gpu-code=compute_20 --compiler-options ${CFLAGS})
 endif()
@@ -56,28 +55,11 @@ else ()
 endif ()
 
 #######################################
-if (CUDA)
-    #link_directories(
-    #    /usr/local/cuda/lib64
-    #)
-
-    message("CUDA_LIBRARIES = ${CUDA_LIBRARIES}")
-    message("CMAKE_THREAD_LIBS_INIT = ${CMAKE_THREAD_LIBS_INIT}")
-    message("CUDA_CUBLAS_LIBRARIES = ${CUDA_CUBLAS_LIBRARIES}")
-    message("CUDA_curand_LIBRARY = ${CUDA_curand_LIBRARY}")
-    
-
-    target_link_libraries(pydarknet
-        ${OpenCV_LIBS}
-        ${CUDA_LIBRARIES}
-        ${CMAKE_THREAD_LIBS_INIT}
-        ${CUDA_CUBLAS_LIBRARIES}
-        ${CUDA_curand_LIBRARY}
-    )
-else ()
-    target_link_libraries(pydarknet
-        ${OpenCV_LIBS}
-        ${CMAKE_THREAD_LIBS_INIT}
-    )
-endif ()
+target_link_libraries(pydarknet
+    ${OpenCV_LIBS}
+    ${CUDA_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${CUDA_CUBLAS_LIBRARIES}
+    ${CUDA_curand_LIBRARY}
+)
 

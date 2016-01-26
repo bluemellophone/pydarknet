@@ -5,6 +5,7 @@ from collections import OrderedDict as odict
 import ctypes as C
 from six.moves import zip, range
 # Scientific
+from os.path import abspath, basename, join, exists
 import utool as ut
 import numpy as np
 import time
@@ -15,8 +16,10 @@ VERBOSE_DARK = ut.get_argflag('--verbdark') or ut.VERBOSE
 QUIET_DARK   = ut.get_argflag('--quietdark') or ut.QUIET
 
 
-DEFAULT_CONFIG_URL  = 'https://www.dropbox.com/s/56pjkepp4dhjnn9/detect.yolo.5.cfg'
-DEFAULT_WEIGHTS_URL = 'https://www.dropbox.com/s/i0kxtq88yoio6to/detect.yolo.5.weights'
+DEFAULT_CONFIG_URL          = 'https://www.dropbox.com/s/56pjkepp4dhjnn9/detect.yolo.5.cfg'
+DEFAULT_CONFIG_TEMPLATE_URL = 'https://www.dropbox.com/s/65yaxarob9ptek5/detect.yolo.template.cfg'
+DEFAULT_WEIGHTS_URL         = 'https://www.dropbox.com/s/i0kxtq88yoio6to/detect.yolo.5.weights'
+DEFAULT_PRETRAINED_URL      = 'https://www.dropbox.com/s/t3197f1rkw4v6fp/detect.yolo.pretrained.weights'
 
 
 #============================
@@ -62,6 +65,16 @@ METHODS['init'] = ([
     C_INT,           # quiet
 ], C_OBJ)
 
+METHODS['train'] = ([
+    C_OBJ,           # network
+    C_CHAR,          # train_image_manifest
+    C_CHAR,          # weight_path
+    C_INT,           # num_input
+    C_CHAR,          # final_weight_filepath
+    C_INT,           # verbose
+    C_INT,           # quiet
+], None)
+
 METHODS['detect'] = ([
     C_OBJ,           # network
     C_ARRAY_CHAR,    # input_gpath_array
@@ -72,6 +85,7 @@ METHODS['detect'] = ([
     C_INT,           # quiet
 ], None)
 
+DEFAULT_CLASS = 'UNKNOWN'
 CLASS_LIST = [
     'elephant_savanna',
     'giraffe_reticulated',
@@ -117,20 +131,168 @@ class Darknet_YOLO_Detector(object):
         dark.verbose = verbose
         dark.quiet = quiet
 
+        dark._load(config_filepath, weight_filepath)
+
+        if dark.verbose and not dark.quiet:
+            print('[pydarknet py] New Darknet_YOLO Object Created')
+
+    def _load(dark, config_filepath, weight_filepath):
         begin = time.time()
         params_list = [
             config_filepath,
             weight_filepath,
-            verbose,
-            quiet,
+            dark.verbose,
+            dark.quiet,
         ]
         dark.net = DARKNET_CLIB.init(*params_list)
         conclude = time.time()
         if not dark.quiet:
             print('[pydarknet py] Took %r seconds to load' % (conclude - begin, ))
 
-        if dark.verbose and not dark.quiet:
-            print('[pydarknet py] New Darknet_YOLO Object Created')
+    def _train_setup(dark, voc_path, weight_path):
+
+        class_list = []
+        annotations_path = join(voc_path, 'Annotations')
+        imagesets_path  = join(voc_path, 'ImageSets')
+        jpegimages_path = join(voc_path, 'JPEGImages')
+        label_path      = join(voc_path, 'labels')
+
+        ut.delete(label_path)
+        ut.ensuredir(label_path)
+
+        def _convert_annotation(image_id):
+            import xml.etree.ElementTree as ET
+
+            def _convert(size, box):
+                dw = 1. / size[0]
+                dh = 1. / size[1]
+                x = (box[0] + box[1]) / 2.0
+                y = (box[2] + box[3]) / 2.0
+                w = box[1] - box[0]
+                h = box[3] - box[2]
+                x = x * dw
+                w = w * dw
+                y = y * dh
+                h = h * dh
+                return (x, y, w, h)
+
+            with open(join(label_path, '%s.txt' % (image_id, )), 'w') as out_file:
+                with open(join(annotations_path, '%s.xml' % (image_id, )), 'r') as in_file:
+                    tree = ET.parse(in_file)
+                    root = tree.getroot()
+                    size = root.find('size')
+                    w = int(size.find('width').text)
+                    h = int(size.find('height').text)
+
+                    for obj in root.iter('object'):
+                        if int(obj.find('difficult').text) == 1:
+                            continue
+                        class_ = obj.find('name').text
+                        if class_ not in class_list:
+                            class_list.append(class_)
+                        class_id = class_list.index(class_)
+                        xmlbox = obj.find('bndbox')
+                        b = tuple(map(float, [
+                            xmlbox.find('xmin').text,
+                            xmlbox.find('xmax').text,
+                            xmlbox.find('ymin').text,
+                            xmlbox.find('ymax').text,
+                        ]))
+                        bb = _convert((w, h), b)
+                        bb_str = ' '.join( [str(_) for _ in bb] )
+                        out_file.write('%s %s\n' % (class_id, bb_str))
+
+        num_images = 0
+        print('[pydarknet py train] Processing manifest...')
+        with open(join(voc_path, 'manifest.txt'), 'w') as manifest:
+            for dataset_name in ['train', 'val', 'test']:
+                dataset_filename = join(imagesets_path, 'Main', '%s.txt' % dataset_name)
+                with open(dataset_filename, 'r') as dataset:
+                    image_id_list = dataset.read().strip().split()
+
+                for image_id in image_id_list:
+                    print('[pydarknet py train]     processing: %r' % (image_id, ))
+                    image_filepath = abspath(join(jpegimages_path, '%s.jpg' % image_id))
+                    if exists(image_filepath):
+                        manifest.write('%s\n' % (image_filepath, ))
+                        _convert_annotation(image_id)
+                        num_images += 1
+
+        print('[pydarknet py train] Processing config and pretrained weights...')
+        # Load default config and pretrained weights
+        config_filepath = ut.grab_file_url(DEFAULT_CONFIG_TEMPLATE_URL, appname='pydarknet')
+        with open(config_filepath, 'r') as config:
+            config_template_str = config.read()
+        with open(join(weight_path, basename(config_filepath)), 'w') as config:
+            config_template_str = config_template_str.replace('_^_OUTPUT_^_',  str(SIDES * SIDES * (BOXES * 5 + len(class_list))))
+            config_template_str = config_template_str.replace('_^_CLASSES_^_', str(len(class_list)))
+            config_template_str = config_template_str.replace('_^_SIDES_^_',   str(SIDES))
+            config_template_str = config_template_str.replace('_^_BOXES_^_',   str(BOXES))
+            config.write(config_template_str)
+        weight_filepath = ut.grab_file_url(DEFAULT_PRETRAINED_URL, appname='pydarknet')
+        dark._load(config_filepath, weight_filepath)
+
+        return num_images
+
+    def train(dark, voc_path, weight_path, **kwargs):
+        '''
+            Train a new forest with the given positive chips and negative chips.
+
+            Args:
+                train_pos_chip_path_list (list of str): list of positive training chips
+                train_neg_chip_path_list (list of str): list of negative training chips
+                trees_path (str): string path of where the newly trained trees are to be saved
+
+            Kwargs:
+                chips_norm_width (int, optional): Chip normalization width for resizing;
+                    the chip is resized to have a width of chips_norm_width and
+                    whatever resulting height in order to best match the original
+                    aspect ratio; defaults to 128
+
+                    If both chips_norm_width and chips_norm_height are specified,
+                    the original aspect ratio of the chip is not respected
+                chips_norm_height (int, optional): Chip normalization height for resizing;
+                    the chip is resized to have a height of chips_norm_height and
+                    whatever resulting width in order to best match the original
+                    aspect ratio; defaults to None
+
+                    If both chips_norm_width and chips_norm_height are specified,
+                    the original aspect ratio of the chip is not respected
+                verbose (bool, optional): verbose flag; defaults to object's verbose or
+                    selectively enabled for this function
+
+            Returns:
+                None
+        '''
+        # Default values
+        params = odict([
+            ('weight_filepath', None),  # This value always gets overwritten
+            ('verbose',         dark.verbose),
+            ('quiet',           dark.quiet),
+        ])
+        params.update(kwargs)
+
+        # Make the tree path absolute
+        weight_path = abspath(weight_path)
+        ut.ensuredir(weight_path)
+
+        # Setup training files and folder structures
+        num_images = dark._train_setup(voc_path, weight_path)
+
+        # Run training algorithm
+        params_list = [
+            dark.net,
+            voc_path,
+            weight_path,
+            num_images,
+        ] + list(params.values())
+        DARKNET_CLIB.train(*params_list)
+        weight_filepath = params_list['weight_filepath']
+
+        if not params['quiet']:
+            print('\n\n[pydarknet py] *************************************')
+            print('[pydarknet py] Training Completed')
+            print('[pydarknet py] Weight file saved to: %s' % (weight_filepath, ))
 
     def detect(dark, input_gpath_list, **kwargs):
         '''
@@ -229,7 +391,7 @@ class Darknet_YOLO_Detector(object):
                 result_list_ = []
                 for prob_list, bbox in zip(probs_list, bbox_list):
                     class_index = np.argmax(prob_list)
-                    class_label = CLASS_LIST[class_index]
+                    class_label = CLASS_LIST[class_index] if len(CLASS_LIST) > class_index else DEFAULT_CLASS
                     class_confidence = prob_list[class_index]
                     if class_confidence < params['sensitivity']:
                         continue
