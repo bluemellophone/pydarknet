@@ -453,3 +453,52 @@ class Darknet_YOLO_Detector(object):
                 detector (object)
         '''
         pass
+
+
+def test_pydarknet():
+    r"""
+
+    CommandLine:
+        python -m pydarknet._pydarknet --exec-test_pydarknet --show
+
+    Example:
+        >>> # ENABLE_DOCTEST
+        >>> from pydarknet._pydarknet import *  # NOQA
+        >>> result = test_pydarknet()
+        >>> print(result)
+    """
+
+    dark = Darknet_YOLO_Detector()
+
+    input_gpath_list = [
+        abspath(join('_test', 'test_%05d.jpg' % (i, )))
+        for i in range(1, 76)
+    ]
+    input_gpath_list = input_gpath_list[:5]
+
+    results_list = dark.detect(input_gpath_list)
+    for filename, result_list in results_list:
+        print(filename)
+        for result in result_list:
+            print('    Found: %r' % (result, ))
+
+    import ibeis
+    from ibeis.ibsfuncs import export_to_xml
+
+    # ibs database from mtest
+    ibs = ibeis.opendb(db='PZ_MTEST')
+    voc_path = export_to_xml(ibs, purge=True)
+    weight_path = abspath(join(ibs._ibsdb, 'weights'))
+    ut.ensuredir(weight_path)
+    dark.train(voc_path, weight_path)
+
+if __name__ == '__main__':
+    r"""
+    CommandLine:
+        python -m pydarknet._pydarknet
+        python -m pydarknet._pydarknet --allexamples
+    """
+    import multiprocessing
+    multiprocessing.freeze_support()  # for win32
+    import utool as ut  # NOQA
+    ut.doctest_funcs()
