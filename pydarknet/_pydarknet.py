@@ -204,7 +204,8 @@ class Darknet_YOLO_Detector(object):
 
         num_images = 0
         print('[pydarknet py train] Processing manifest...')
-        with open(join(voc_path, 'manifest.txt'), 'w') as manifest:
+        manifest_filename = join(voc_path, 'manifest.txt')
+        with open(manifest_filename, 'w') as manifest:
             for dataset_name in ['train', 'val', 'test']:
                 dataset_filename = join(imagesets_path, 'Main', '%s.txt' % dataset_name)
                 with open(dataset_filename, 'r') as dataset:
@@ -223,16 +224,23 @@ class Darknet_YOLO_Detector(object):
         config_filepath = ut.grab_file_url(DEFAULT_CONFIG_TEMPLATE_URL, appname='pydarknet')
         with open(config_filepath, 'r') as config:
             config_template_str = config.read()
-        with open(join(weight_path, basename(config_filepath)), 'w') as config:
-            config_template_str = config_template_str.replace('_^_OUTPUT_^_',  str(SIDES * SIDES * (BOXES * 5 + len(class_list))))
-            config_template_str = config_template_str.replace('_^_CLASSES_^_', str(len(class_list)))
-            config_template_str = config_template_str.replace('_^_SIDES_^_',   str(SIDES))
-            config_template_str = config_template_str.replace('_^_BOXES_^_',   str(BOXES))
+
+        config_filename = basename(config_filepath).replace('.template.', '.%d.' % (len(class_list), ))
+        config_filepath = join(weight_path, config_filename)
+        with open(config_filepath, 'w') as config:
+            replace_list = [
+                ('_^_OUTPUT_^_',  SIDES * SIDES * (BOXES * 5 + len(class_list))),
+                ('_^_CLASSES_^_', len(class_list)),
+                ('_^_SIDES_^_',   SIDES),
+                ('_^_BOXES_^_',   BOXES),
+            ]
+            for needle, replacement in replace_list:
+                config_template_str = config_template_str.replace(needle, str(replacement))
             config.write(config_template_str)
         weight_filepath = ut.grab_file_url(DEFAULT_PRETRAINED_URL, appname='pydarknet')
         dark._load(config_filepath, weight_filepath)
 
-        return num_images
+        return manifest_filename, num_images
 
     def train(dark, voc_path, weight_path, **kwargs):
         '''
@@ -277,12 +285,12 @@ class Darknet_YOLO_Detector(object):
         ut.ensuredir(weight_path)
 
         # Setup training files and folder structures
-        num_images = dark._train_setup(voc_path, weight_path)
+        manifest_filename, num_images = dark._train_setup(voc_path, weight_path)
 
         # Run training algorithm
         params_list = [
             dark.net,
-            voc_path,
+            manifest_filename,
             weight_path,
             num_images,
         ] + list(params.values())

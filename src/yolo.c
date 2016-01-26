@@ -121,10 +121,14 @@ void train_yolo_custom(network *net, char *train_images, char *backup_directory,
     //while(i*imgs < N*120){
     while(get_current_batch(*net) < net->max_batches){
         i += 1;
+        printf("%d\n", i);
         time=clock();
+        printf("LOAD\n");
         pthread_join(load_thread, 0);
+        printf("LOADED\n");
         train = buffer;
         load_thread = load_data_in_thread(args);
+        printf("LOADED2\n");
 
         printf("Loaded: %lf seconds\n", sec(clock()-time));
 
