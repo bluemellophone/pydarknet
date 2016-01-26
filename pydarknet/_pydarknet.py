@@ -156,6 +156,8 @@ class Darknet_YOLO_Detector(object):
         imagesets_path  = join(voc_path, 'ImageSets')
         jpegimages_path = join(voc_path, 'JPEGImages')
         label_path      = join(voc_path, 'labels')
+
+        ut.delete(label_path)
         ut.ensuredir(label_path)
 
         def _convert_annotation(image_id):
