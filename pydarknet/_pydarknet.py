@@ -240,6 +240,8 @@ class Darknet_YOLO_Detector(object):
         weight_filepath = ut.grab_file_url(DEFAULT_PRETRAINED_URL, appname='pydarknet')
         dark._load(config_filepath, weight_filepath)
 
+        print('class_list = %r' % (class_list, ))
+
         return manifest_filename, num_images
 
     def train(dark, voc_path, weight_path, **kwargs):
