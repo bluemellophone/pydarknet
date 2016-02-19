@@ -1,3 +1,4 @@
+#!/bin/bash
 #################################
 echo 'Removing old build'
 # ./unix_build.sh --no-rmbuild
@@ -13,7 +14,6 @@ echo 'Creating new build'
 mkdir -p build
 cd build
 #################################
-
 if [[ "$(which nvcc)" == "" ]]; then
     export CMAKE_CUDA=Off
 else
