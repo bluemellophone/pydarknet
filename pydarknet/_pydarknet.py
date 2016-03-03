@@ -242,6 +242,7 @@ class Darknet_YOLO_Detector(object):
         dark._load(config_filepath, weight_filepath)
 
         print('class_list = %r' % (class_list, ))
+        print('num_images = %r' % (num_images, ))
 
         return manifest_filename, num_images
 
