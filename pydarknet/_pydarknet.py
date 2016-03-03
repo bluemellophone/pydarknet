@@ -25,9 +25,9 @@ DEFAULT_PRETRAINED_URL      = 'https://www.dropbox.com/s/t3197f1rkw4v6fp/detect.
 #============================
 # CTypes Interface Data Types
 #============================
-'''
+"""
     Bindings for C Variable Types
-'''
+"""
 NP_FLAGS       = 'aligned, c_contiguous, writeable'
 # Primatives
 C_OBJ          = C.c_void_p
@@ -50,11 +50,11 @@ RESULTS_ARRAY  = np.ctypeslib.ndpointer(dtype=NP_ARRAY_FLOAT, ndim=1, flags=NP_F
 #=================================
 # Method Parameter Types
 #=================================
-'''
+"""
 IMPORTANT:
     For functions that return void, use Python None as the return value.
     For functions that take no parameters, use the Python empty list [].
-'''
+"""
 
 METHODS = {}
 
@@ -112,7 +112,7 @@ class Darknet_YOLO_Detector(object):
 
     def __init__(dark, config_filepath=None, weight_filepath=None,
                  verbose=VERBOSE_DARK, quiet=QUIET_DARK):
-        '''
+        """
             Create the C object for the PyDarknet YOLO detector.
 
             Args:
@@ -120,7 +120,7 @@ class Darknet_YOLO_Detector(object):
 
             Returns:
                 detector (object): the Darknet YOLO Detector object
-        '''
+        """
 
         if config_filepath in ['default', None]:
             config_filepath = ut.grab_file_url(DEFAULT_CONFIG_URL, appname='pydarknet')
@@ -206,7 +206,8 @@ class Darknet_YOLO_Detector(object):
         print('[pydarknet py train] Processing manifest...')
         manifest_filename = join(voc_path, 'manifest.txt')
         with open(manifest_filename, 'w') as manifest:
-            for dataset_name in ['train', 'val', 'test']:
+            # for dataset_name in ['train', 'val', 'test']:
+            for dataset_name in ['train', 'val']:
                 dataset_filename = join(imagesets_path, 'Main', '%s.txt' % dataset_name)
                 with open(dataset_filename, 'r') as dataset:
                     image_id_list = dataset.read().strip().split()
@@ -245,7 +246,7 @@ class Darknet_YOLO_Detector(object):
         return manifest_filename, num_images
 
     def train(dark, voc_path, weight_path, **kwargs):
-        '''
+        """
             Train a new forest with the given positive chips and negative chips.
 
             Args:
@@ -273,7 +274,7 @@ class Darknet_YOLO_Detector(object):
 
             Returns:
                 None
-        '''
+        """
         # Default values
         params = odict([
             ('weight_filepath', None),  # This value always gets overwritten
@@ -305,7 +306,7 @@ class Darknet_YOLO_Detector(object):
             print('[pydarknet py] Weight file saved to: %s' % (weight_filepath, ))
 
     def detect(dark, input_gpath_list, **kwargs):
-        '''
+        """
             Run detection with a given loaded forest on a list of images
 
             Args:
@@ -336,7 +337,7 @@ class Darknet_YOLO_Detector(object):
                         confidence (float): the confidence that this bounding box is of
                             the class specified by the trees used during testing
 
-        '''
+        """
         # Default values
         params = odict([
             ('batch_size',    None),
@@ -420,7 +421,7 @@ class Darknet_YOLO_Detector(object):
 
     # Pickle functions
     def dump(dark, file):
-        '''
+        """
             UNIMPLEMENTED
 
             Args:
@@ -428,20 +429,20 @@ class Darknet_YOLO_Detector(object):
 
             Returns:
                 None
-        '''
+        """
         pass
 
     def dumps(dark):
-        '''
+        """
             UNIMPLEMENTED
 
             Returns:
                 string
-        '''
+        """
         pass
 
     def load(dark, file):
-        '''
+        """
             UNIMPLEMENTED
 
             Args:
@@ -449,11 +450,11 @@ class Darknet_YOLO_Detector(object):
 
             Returns:
                 detector (object)
-        '''
+        """
         pass
 
     def loads(dark, string):
-        '''
+        """
             UNIMPLEMENTED
 
             Args:
@@ -461,7 +462,7 @@ class Darknet_YOLO_Detector(object):
 
             Returns:
                 detector (object)
-        '''
+        """
         pass
 
 
