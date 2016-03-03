@@ -495,9 +495,8 @@ def test_pydarknet():
             print('    Found: %r' % (result, ))
 
     # ibs database from mtest
-    ibs = ibeis.opendb(db='PZ_MTEST')
-    voc_path = export_to_xml(ibs, purge=True)
-    weight_path = abspath(join(ibs._ibsdb, 'weights'))
+    voc_path = '/media/extend/jason/Dataset/'
+    weight_path = '/media/extend/jason/weights'
     ut.ensuredir(weight_path)
     dark.train(voc_path, weight_path)
 
