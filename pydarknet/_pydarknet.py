@@ -87,11 +87,12 @@ METHODS['detect'] = ([
 
 DEFAULT_CLASS = 'UNKNOWN'
 CLASS_LIST = [
-    'elephant_savanna',
-    'giraffe_reticulated',
-    'giraffe_masai',
+    # 'elephant_savanna',
+    # 'giraffe_reticulated',
+    # 'giraffe_masai',
+    'zebra_plains',
+    'unspecified',
     'zebra_grevys',
-    'zebra_plains'
 ]
 SIDES = 7
 BOXES = 2
