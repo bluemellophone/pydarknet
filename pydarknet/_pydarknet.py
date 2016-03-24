@@ -16,10 +16,10 @@ VERBOSE_DARK = ut.get_argflag('--verbdark') or ut.VERBOSE
 QUIET_DARK   = ut.get_argflag('--quietdark') or ut.QUIET
 
 
-DEFAULT_CONFIG_URL          = 'https://www.dropbox.com/s/56pjkepp4dhjnn9/detect.yolo.5.cfg'
-DEFAULT_CONFIG_TEMPLATE_URL = 'https://www.dropbox.com/s/65yaxarob9ptek5/detect.yolo.template.cfg'
-DEFAULT_WEIGHTS_URL         = 'https://www.dropbox.com/s/i0kxtq88yoio6to/detect.yolo.5.weights'
-DEFAULT_PRETRAINED_URL      = 'https://www.dropbox.com/s/t3197f1rkw4v6fp/detect.yolo.pretrained.weights'
+DEFAULT_CONFIG_URL          = 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg'
+DEFAULT_CONFIG_TEMPLATE_URL = 'https://lev.cs.rpi.edu/public/models/detect.yolo.template.cfg'
+DEFAULT_WEIGHTS_URL         = 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.weights'
+DEFAULT_PRETRAINED_URL      = 'https://lev.cs.rpi.edu/public/models/detect.yolo.pretrained.weights'
 
 
 #============================
@@ -480,7 +480,7 @@ def test_pydarknet():
         >>> print(result)
     """
     import ibeis
-    from ibeis.ibsfuncs import export_to_xml
+    from ibeis.other.detectfuncs import export_to_xml
 
     dark = Darknet_YOLO_Detector()
 
