@@ -347,8 +347,9 @@ class Darknet_YOLO_Detector(object):
             ('verbose',       dark.verbose),
             ('quiet',         dark.quiet),
         ])
-        params.update(kwargs)
-
+        for key, value in params.iteritems():
+            params[key] = kwargs.get(key, value)
+        # params.update(kwargs)
         # Try to determine the parallel processing batch size
         if params['batch_size'] is None:
             # try:
