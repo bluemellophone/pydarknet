@@ -9,27 +9,35 @@ import utool as ut
 
 
 def run_tests():
-    # Build module list and run tests
-    import sys
-    ut.change_term_title('RUN pydarknet TESTS')
-    exclude_doctests_fnames = set([
-    ])
-    exclude_dirs = [
-        '_broken', 'old', 'tests', 'timeits',
-        '_scripts', '_timeits', '_doc', 'notebook',
-    ]
-    dpath_list = ['pydarknet']
-    doctest_modname_list = ut.find_doctestable_modnames(
-        dpath_list, exclude_doctests_fnames, exclude_dirs)
+    # # Build module list and run tests
+    # import sys
+    # ut.change_term_title('RUN pydarknet TESTS')
+    # exclude_doctests_fnames = set([
+    # ])
+    # exclude_dirs = [
+    #     '_broken', 'old', 'tests', 'timeits',
+    #     '_scripts', '_timeits', '_doc', 'notebook',
+    # ]
+    # dpath_list = ['pydarknet']
+    # doctest_modname_list = ut.find_doctestable_modnames(
+    #     dpath_list, exclude_doctests_fnames, exclude_dirs)
 
-    for modname in doctest_modname_list:
-        exec('import ' + modname, globals())
-    module_list = [sys.modules[name] for name in doctest_modname_list]
-    nPass, nTotal, failed_cmd_list = ut.doctest_module_list(module_list)
-    if nPass != nTotal:
-        return 1
-    else:
-        return 0
+    # for modname in doctest_modname_list:
+    #     exec('import ' + modname, globals())
+    # module_list = [sys.modules[name] for name in doctest_modname_list]
+    # nPass, nTotal, failed_cmd_list = ut.doctest_module_list(module_list)
+    # if nPass != nTotal:
+    #     return 1
+    # else:
+    #     return 0
+
+    from pydarknet import Darknet_YOLO_Detector
+    dark = Darknet_YOLO_Detector()
+
+    voc_path = '/media/hdd/jason/yolo/LearningData'
+    weight_path = '/media/hdd/jason/yolo/weights'
+    ut.ensuredir(weight_path)
+    dark.train(voc_path, weight_path)
 
 if __name__ == '__main__':
     import multiprocessing
