@@ -282,7 +282,8 @@ class Darknet_YOLO_Detector(object):
             ('verbose',         dark.verbose),
             ('quiet',           dark.quiet),
         ])
-        params.update(kwargs)
+        # params.update(kwargs)
+        ut.update_existing(params, kwargs)
 
         # Make the tree path absolute
         weight_path = abspath(weight_path)
@@ -347,9 +348,8 @@ class Darknet_YOLO_Detector(object):
             ('verbose',       dark.verbose),
             ('quiet',         dark.quiet),
         ])
-        for key, value in params.iteritems():
-            params[key] = kwargs.get(key, value)
         # params.update(kwargs)
+        ut.update_existing(params, kwargs)
         # Try to determine the parallel processing batch size
         if params['batch_size'] is None:
             # try:
