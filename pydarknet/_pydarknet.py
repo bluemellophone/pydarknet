@@ -238,6 +238,12 @@ class Darknet_YOLO_Detector(object):
             for needle, replacement in replace_list:
                 config_template_str = config_template_str.replace(needle, str(replacement))
             config.write(config_template_str)
+
+        class_filepath = '%s.classes' % (config_filepath, )
+        with open(class_filepath, 'w') as class_file:
+            for class_ in class_list:
+                class_file.write('%s\n' % (class_, ))
+
         weight_filepath = ut.grab_file_url(DEFAULT_PRETRAINED_URL, appname='pydarknet')
         dark._load(config_filepath, weight_filepath)
 
