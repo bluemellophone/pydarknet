@@ -48,13 +48,18 @@ PYTHON_DARKNET void train(network *net, char *train_image_manifest, char *weight
 }
 
 PYTHON_DARKNET void detect(network *net, char **input_gpath_array,
-                           int num_input, float thresh, float* results_array,
-                           int verbose, int quiet)
+                           int num_input, float thresh, int grid,
+                           float* results_array, int verbose, int quiet)
 {
-    printf("\n[pydarknet c] Performing inference on %d images\n", num_input);
+    printf("\n[pydarknet c] Performing inference on %d images", num_input);
+    if(grid)
+    {
+        printf(" (using grid)");
+    }
+    printf("\n");
     int index;
     for (index = 0; index < num_input; ++ index)
     {
-        test_yolo_results(net, input_gpath_array[index], thresh, results_array, index, verbose, quiet);
+        test_yolo_results(net, input_gpath_array[index], thresh, grid, results_array, index, verbose, quiet);
     }
 }

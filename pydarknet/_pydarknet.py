@@ -80,6 +80,7 @@ METHODS['detect'] = ([
     C_ARRAY_CHAR,    # input_gpath_array
     C_INT,           # num_input
     C_FLOAT,         # sensitivity
+    C_INT,           # grid
     NP_ARRAY_FLOAT,  # results_array
     C_INT,           # verbose
     C_INT,           # quiet
@@ -102,13 +103,23 @@ CLASS_LIST = [
 ]
 SIDES = 7
 BOXES = 2
-PROB_RESULT_LENGTH = SIDES * SIDES * BOXES * len(CLASS_LIST)
-BBOX_RESULT_LENGTH = SIDES * SIDES * BOXES * 4
-RESULT_LENGTH = PROB_RESULT_LENGTH + BBOX_RESULT_LENGTH
+GRID = 1
+PROB_RESULT_LENGTH = None
+BBOX_RESULT_LENGTH = None
+RESULT_LENGTH = None
+
+
+def _update_globals(grid=GRID):
+    global PROB_RESULT_LENGTH, BBOX_RESULT_LENGTH, RESULT_LENGTH
+    PROB_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * len(CLASS_LIST)
+    BBOX_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * 4
+    RESULT_LENGTH = PROB_RESULT_LENGTH + BBOX_RESULT_LENGTH
+
 
 #=================================
 # Load Dynamic Library
 #=================================
+_update_globals()
 DARKNET_CLIB = _load_c_shared_library(METHODS)
 
 
@@ -357,12 +368,19 @@ class Darknet_YOLO_Detector(object):
         params = odict([
             ('batch_size',    None),
             ('sensitivity',   0.2),
+            ('grid',          False),
             ('results_array', None),  # This value always gets overwritten
             ('verbose',       dark.verbose),
             ('quiet',         dark.quiet),
         ])
         # params.update(kwargs)
         ut.update_existing(params, kwargs)
+
+        if params['grid']:
+            _update_globals(grid=10)
+        else:
+            _update_globals(grid=1)
+
         # Try to determine the parallel processing batch size
         if params['batch_size'] is None:
             # try:
@@ -493,8 +511,8 @@ def test_pydarknet():
         >>> result = test_pydarknet()
         >>> print(result)
     """
-    import ibeis
-    from ibeis.other.detectfuncs import export_to_xml
+    # import ibeis
+    # from ibeis.other.detectfuncs import export_to_xml
 
     dark = Darknet_YOLO_Detector()
 

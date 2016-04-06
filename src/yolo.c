@@ -151,22 +151,27 @@ void train_yolo_custom(network *net, char *train_images, char *backup_directory,
     save_weights(*net, weight_filepath);
 }
 
-void convert_yolo_detections(float *predictions, int classes, int num, int square, int side, int w, int h, float thresh, float **probs, box *boxes, int only_objectness)
+void convert_yolo_detections(float *predictions, int classes, int num, int square, int side, int w, int h, float thresh, float **probs, box *boxes, int only_objectness, int offset, float dx, float dy, float ds)
 {
     int i,j,n;
+    int index_offset = side*side*num*offset;
     //int per_cell = 5*num+classes;
     for (i = 0; i < side*side; ++i){
         int row = i / side;
         int col = i % side;
         for(n = 0; n < num; ++n){
-            int index = i*num + n;
+            int index = i*num + n + index_offset;
             int p_index = side*side*classes + i*num + n;
             float scale = predictions[p_index];
             int box_index = side*side*(classes + num) + (i*num + n)*4;
             boxes[index].x = (predictions[box_index + 0] + col) / side * w;
+            boxes[index].x = boxes[index].x * ds + dx;
             boxes[index].y = (predictions[box_index + 1] + row) / side * h;
+            boxes[index].y = boxes[index].y * ds + dy;
             boxes[index].w = pow(predictions[box_index + 2], (square?2:1)) * w;
+            boxes[index].w = boxes[index].w * ds;
             boxes[index].h = pow(predictions[box_index + 3], (square?2:1)) * h;
+            boxes[index].h = boxes[index].h * ds;
             for(j = 0; j < classes; ++j){
                 int class_index = i*classes;
                 float prob = scale*predictions[class_index+j];
@@ -278,7 +283,7 @@ void convert_yolo_detections(float *predictions, int classes, int num, int squar
 //             float *predictions = network_predict(net, X);
 //             int w = val[t].w;
 //             int h = val[t].h;
-//             convert_yolo_detections(predictions, classes, l.n, square, side, w, h, thresh, probs, boxes, 0);
+//             convert_yolo_detections(predictions, classes, l.n, square, side, w, h, thresh, probs, boxes, 0, 0, 0, 0, 1.0);
 //             if (nms) do_nms_sort(boxes, probs, side*side*l.n, classes, iou_thresh);
 //             print_yolo_detections(fps, id, boxes, probs, side*side*l.n, classes, w, h);
 //             free(id);
@@ -337,7 +342,7 @@ void convert_yolo_detections(float *predictions, int classes, int num, int squar
 //         image sized = resize_image(orig, net.w, net.h);
 //         char *id = basecfg(path);
 //         float *predictions = network_predict(net, sized.data);
-//         convert_yolo_detections(predictions, classes, l.n, square, side, 1, 1, thresh, probs, boxes, 1);
+//         convert_yolo_detections(predictions, classes, l.n, square, side, 1, 1, thresh, probs, boxes, 1, 0, 0, 0, 1.0);
 //         if (nms) do_nms(boxes, probs, side*side*l.n, 1, nms);
 
 //         char *labelpath = find_replace(path, "images", "labels");
@@ -409,7 +414,7 @@ void convert_yolo_detections(float *predictions, int classes, int num, int squar
 //         float *predictions = network_predict(net, X);
 
 //         printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
-//         convert_yolo_detections(predictions, l.classes, l.n, l.sqrt, l.side, 1, 1, thresh, probs, boxes, 0);
+//         convert_yolo_detections(predictions, l.classes, l.n, l.sqrt, l.side, 1, 1, thresh, probs, boxes, 0, 0, 0, 0, 1.0);
 //         if (nms) do_nms_sort(boxes, probs, l.side*l.side*l.n, l.classes, nms);
 //         draw_detections(im, l.side*l.side*l.n, thresh, boxes, probs, voc_names, voc_labels, l.classes);
 //         show_image(im, "predictions");
@@ -425,7 +430,7 @@ void convert_yolo_detections(float *predictions, int classes, int num, int squar
 //     }
 // }
 
-void test_yolo_results(network *net, char *filename, float sensitivity, float* results, int result_index, int verbose, int quiet)
+void test_yolo_results(network *net, char *filename, float sensitivity, int grid, float* results, int result_index, int verbose, int quiet)
 {
     detection_layer l = net->layers[net->n-1];
     set_batch_network(net, 1);
@@ -436,26 +441,67 @@ void test_yolo_results(network *net, char *filename, float sensitivity, float* r
     int i, j, prob_offset, offset;
     float nms=.5;
     int num = l.side*l.side*l.n;
+    if(grid)
+    {
+        num *= 10;
+    }
     box *boxes = calloc(num, sizeof(box));
     float **probs = calloc(num, sizeof(float *));
     for(j = 0; j < num; ++j) probs[j] = calloc(l.classes, sizeof(float *));
 
     strncpy(input, filename, 256);
 
+    int super_w = (int) net->w * (5.0 / 3.0) + 1;
+    int super_h = (int) net->h * (5.0 / 3.0) + 1;
     image im = load_image_color(input,0,0);
-    image sized = resize_image(im, net->w, net->h);
-    float *X = sized.data;
+    image sized_super = resize_image(im, super_w, super_h);
+
+    float *X;
+    float *predictions;
 
     time=clock();
-    float *predictions = network_predict(*net, X);
+
+    image sized = resize_image(sized_super, net->w, net->h);
+    X = sized.data;
+    predictions = network_predict(*net, X);
+    offset = 0;
+    convert_yolo_detections(predictions, l.classes, l.n, l.sqrt, l.side, 1, 1, sensitivity, probs, boxes, 0, offset, 0, 0, 1.0);
+
+    if(grid)
+    {
+        if(verbose)
+        {
+            printf("0: (0 0 %d %d)\n", sized_super.w, sized_super.h);
+        }
+        int dx, dy;
+        for(i = 0; i < 3; ++i)
+        {
+            for(j = 0; j < 3; ++j)
+            {
+                offset = i * 3 + j + 1;
+                dx = (int) (super_w + 1) * (i / 5.0);
+                dy = (int) (super_h + 1) * (j / 5.0);
+                sized = crop_image(sized_super, dx, dy, net->w, net->h);
+                if(verbose)
+                {
+                    printf("%d: (%d %d %d %d)\n", offset, dx, dy, sized.w, sized.h);
+                }
+                X = sized.data;
+                predictions = network_predict(*net, X);
+                convert_yolo_detections(predictions, l.classes, l.n, l.sqrt, l.side, 1, 1, sensitivity, probs, boxes, 0, offset, i / 5.0, j / 5.0, 3.0 / 5.0);
+            }
+        }
+    }
+
     if(verbose)
     {
         printf("[pydarknet c] %s: Predicted in %f seconds.\n", input, sec(clock()-time));
     }
+
     free_image(im);
+    free_image(sized_super);
     free_image(sized);
 
-    convert_yolo_detections(predictions, l.classes, l.n, l.sqrt, l.side, 1, 1, sensitivity, probs, boxes, 0);
     if (nms) do_nms_sort(boxes, probs, num, l.classes, nms);
 
     int result_length = num * (l.classes + 4);
