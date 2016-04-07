@@ -61,7 +61,7 @@ def run_tests():
 
     zipped = zip(results_list1, results_list2)
     for (filename, result_list1), (filename2, result_list2) in zipped:
-        print(filename
+        print(filename)
         image = cv2.imread(filename)
         for result in result_list1:
             if result['confidence'] < 0.5:
