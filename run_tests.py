@@ -64,7 +64,7 @@ def run_tests():
         print(filename)
         image = cv2.imread(filename)
         for result in result_list1:
-            if result['confidence'] < 0.5:
+            if result['confidence'] < 0.8:
                 continue
             print('    Found 1: %r' % (result, ))
             xtl = int(result['xtl'])
@@ -73,7 +73,7 @@ def run_tests():
             ybr = int(result['ytl'] + result['height'])
             cv2.rectangle(image, (xtl, ytl), (xbr, ybr), (255, 140, 0), 5)
         for result in result_list2:
-            if result['confidence'] < 0.5:
+            if result['confidence'] < 0.8:
                 continue
             print('    Found 2: %r' % (result, ))
             xtl = int(result['xtl'])
@@ -82,7 +82,7 @@ def run_tests():
             ybr = int(result['ytl'] + result['height'])
             cv2.rectangle(image, (xtl, ytl), (xbr, ybr), (0, 140, 255), 3)
         for result in result_list1:
-            if result['confidence'] < 0.5:
+            if result['confidence'] < 0.8:
                 continue
             xtl = int(result['xtl'])
             ytl = int(result['ytl'])
