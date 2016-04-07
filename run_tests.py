@@ -71,7 +71,7 @@ def run_tests():
             ytl = int(result['ytl'])
             xbr = int(result['xtl'] + result['width'])
             ybr = int(result['ytl'] + result['height'])
-            cv2.rectangle(image, (xtl, ytl), (xbr, ybr), (255, 140, 0), 4)
+            cv2.rectangle(image, (xtl, ytl), (xbr, ybr), (255, 140, 0), 5)
         for result in result_list2:
             if result['confidence'] < 0.5:
                 continue
@@ -80,7 +80,7 @@ def run_tests():
             ytl = int(result['ytl'])
             xbr = int(result['xtl'] + result['width'])
             ybr = int(result['ytl'] + result['height'])
-            cv2.rectangle(image, (xtl, ytl), (xbr, ybr), (0, 140, 255), 4)
+            cv2.rectangle(image, (xtl, ytl), (xbr, ybr), (0, 140, 255), 3)
         for result in result_list1:
             if result['confidence'] < 0.5:
                 continue
@@ -88,7 +88,7 @@ def run_tests():
             ytl = int(result['ytl'])
             xbr = int(result['xtl'] + result['width'])
             ybr = int(result['ytl'] + result['height'])
-            cv2.rectangle(image, (xtl, ytl), (xbr, ybr), (255, 140, 0), 2)
+            cv2.rectangle(image, (xtl, ytl), (xbr, ybr), (255, 140, 0), 1)
         temp_filepath = join(temp_path, basename(filename))
         cv2.imwrite(temp_filepath, image)
 
