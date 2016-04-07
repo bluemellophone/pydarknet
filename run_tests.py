@@ -39,10 +39,10 @@ def run_tests():
     # ut.ensuredir(weight_path)
     # dark.train(voc_path, weight_path)
 
-    config_filepath = '/media/hdd/jason/yolo/weights/detect.yolo.12.cfg'
-    weight_filepath = '/media/hdd/jason/yolo/weights/detect.yolo.12.25000.weights'
-    # config_filepath = '/Users/bluemellophone/Desktop/detect.yolo.12.cfg'
-    # weight_filepath = '/Users/bluemellophone/Desktop/detect.yolo.12.weights'
+    # config_filepath = '/media/hdd/jason/yolo/weights/detect.yolo.12.cfg'
+    # weight_filepath = '/media/hdd/jason/yolo/weights/detect.yolo.12.25000.weights'
+    config_filepath = '/Users/bluemellophone/Desktop/detect.yolo.12.cfg'
+    weight_filepath = '/Users/bluemellophone/Desktop/detect.yolo.12.weights'
     dark = Darknet_YOLO_Detector(config_filepath=config_filepath, weight_filepath=weight_filepath)
 
     import cv2
@@ -51,17 +51,17 @@ def run_tests():
         abspath(join('_test', 'test_%05d.jpg' % (i, )))
         for i in range(1, 76)
     ]
-    input_gpath_list = input_gpath_list[:1]
+    # input_gpath_list = input_gpath_list[:2]
 
     temp_path = abspath('temp')
     ut.ensuredir(temp_path)
 
-    results_list1 = dark.detect(input_gpath_list, grid=False)
-    results_list2 = dark.detect(input_gpath_list, grid=True)
+    results_list1 = list(dark.detect(input_gpath_list, grid=False))
+    results_list2 = list(dark.detect(input_gpath_list, grid=True))
 
     zipped = zip(results_list1, results_list2)
     for (filename, result_list1), (filename2, result_list2) in zipped:
-        print(filename, len(result_list1))
+        print(filename
         image = cv2.imread(filename)
         for result in result_list1:
             if result['confidence'] < 0.5:
@@ -82,7 +82,6 @@ def run_tests():
             ybr = int(result['ytl'] + result['height'])
             cv2.rectangle(image, (xtl, ytl), (xbr, ybr), (0, 140, 255), 4)
         temp_filepath = join(temp_path, basename(filename))
-        print(temp_filepath)
         cv2.imwrite(temp_filepath, image)
 
 
