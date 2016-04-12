@@ -16,9 +16,11 @@ VERBOSE_DARK = ut.get_argflag('--verbdark') or ut.VERBOSE
 QUIET_DARK   = ut.get_argflag('--quietdark') or ut.QUIET
 
 
-DEFAULT_CONFIG_URL          = 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg'
+DEFAULT_CONFIG_URL          = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg'
+DEFAULT_WEIGHTS_URL         = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.weights'
+OLD_DEFAULT_CONFIG_URL      = 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.cfg'
+OLD_DEFAULT_WEIGHTS_URL     = 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.weights'
 DEFAULT_CONFIG_TEMPLATE_URL = 'https://lev.cs.rpi.edu/public/models/detect.yolo.template.cfg'
-DEFAULT_WEIGHTS_URL         = 'https://lev.cs.rpi.edu/public/models/detect.yolo.5.weights'
 DEFAULT_PRETRAINED_URL      = 'https://lev.cs.rpi.edu/public/models/detect.yolo.pretrained.weights'
 
 
@@ -92,7 +94,7 @@ CLASS_LIST = [
     'zebra_plains',
     'hippopotamus',
     'antelope',
-    'elephant_savannah',
+    'elephant_savanna',
     'giraffe_reticulated',
     'zebra_grevys',
     'giraffe_masai',
@@ -100,6 +102,13 @@ CLASS_LIST = [
     'car',
     'bird',
     'building',
+]
+OLD_CLASS_LIST = [
+    'elephant_savanna',
+    'giraffe_reticulated',
+    'giraffe_masai',
+    'zebra_grevys',
+    'zebra_plains',
 ]
 SIDES = 7
 BOXES = 2
@@ -109,9 +118,9 @@ BBOX_RESULT_LENGTH = None
 RESULT_LENGTH = None
 
 
-def _update_globals(grid=GRID):
+def _update_globals(grid=GRID, class_list=CLASS_LIST):
     global PROB_RESULT_LENGTH, BBOX_RESULT_LENGTH, RESULT_LENGTH
-    PROB_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * len(CLASS_LIST)
+    PROB_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * len(class_list)
     BBOX_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * 4
     RESULT_LENGTH = PROB_RESULT_LENGTH + BBOX_RESULT_LENGTH
 
@@ -140,11 +149,18 @@ class Darknet_YOLO_Detector(object):
                 detector (object): the Darknet YOLO Detector object
         """
 
-        if config_filepath in ['default', None]:
+        dark.CLASS_LIST = None
+        if config_filepath in ['default', 'v2', None]:
             config_filepath = ut.grab_file_url(DEFAULT_CONFIG_URL, appname='pydarknet')
+            dark.CLASS_LIST = CLASS_LIST
+        elif config_filepath in ['v1', 'old', 'original']:
+            dark.CLASS_LIST = OLD_CLASS_LIST
+            config_filepath = ut.grab_file_url(OLD_DEFAULT_CONFIG_URL, appname='pydarknet')
 
-        if weight_filepath in ['default', None]:
+        if weight_filepath in ['default', 'v2', None]:
             weight_filepath = ut.grab_file_url(DEFAULT_WEIGHTS_URL, appname='pydarknet')
+        elif weight_filepath in ['v1', 'old', 'original']:
+            weight_filepath = ut.grab_file_url(OLD_DEFAULT_WEIGHTS_URL, appname='pydarknet')
 
         dark.verbose = verbose
         dark.quiet = quiet
@@ -367,6 +383,7 @@ class Darknet_YOLO_Detector(object):
         # Default values
         params = odict([
             ('batch_size',    None),
+            ('class_list',    dark.CLASS_LIST),
             ('sensitivity',   0.2),
             ('grid',          False),
             ('results_array', None),  # This value always gets overwritten
@@ -375,11 +392,13 @@ class Darknet_YOLO_Detector(object):
         ])
         # params.update(kwargs)
         ut.update_existing(params, kwargs)
+        class_list = params['class_list']
+        del params['class_list']  # Remove this value from params
 
         if params['grid']:
-            _update_globals(grid=10)
+            _update_globals(grid=10, class_list=class_list)
         else:
-            _update_globals(grid=1)
+            _update_globals(grid=1, class_list=class_list)
 
         # Try to determine the parallel processing batch size
         if params['batch_size'] is None:
@@ -429,13 +448,13 @@ class Darknet_YOLO_Detector(object):
             for input_gpath, result_list in zip(input_gpath_list_, results_list):
                 probs_list, bbox_list = np.split(result_list, [PROB_RESULT_LENGTH])
                 assert probs_list.shape[0] == PROB_RESULT_LENGTH and bbox_list.shape[0] == BBOX_RESULT_LENGTH
-                probs_list = probs_list.reshape( (-1, len(CLASS_LIST)) )
+                probs_list = probs_list.reshape( (-1, len(class_list)) )
                 bbox_list = bbox_list.reshape( (-1, 4) )
 
                 result_list_ = []
                 for prob_list, bbox in zip(probs_list, bbox_list):
                     class_index = np.argmax(prob_list)
-                    class_label = CLASS_LIST[class_index] if len(CLASS_LIST) > class_index else DEFAULT_CLASS
+                    class_label = class_list[class_index] if len(class_list) > class_index else DEFAULT_CLASS
                     class_confidence = prob_list[class_index]
                     if class_confidence < params['sensitivity']:
                         continue
