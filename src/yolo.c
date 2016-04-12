@@ -439,7 +439,7 @@ void test_yolo_results(network *net, char *filename, float sensitivity, int grid
     char buff[256];
     char *input = buff;
     int i, j, prob_offset, offset;
-    float nms=.5;
+    float nms=.8;
     int num = l.side*l.side*l.n;
     if(grid)
     {
@@ -508,7 +508,7 @@ void test_yolo_results(network *net, char *filename, float sensitivity, int grid
         {
             for(j = 0; j < l.classes; ++j)
             {
-                probs[i][j] *= 2.0;
+                probs[i][j] *= 1.5;
             }
         }
     }
@@ -521,7 +521,7 @@ void test_yolo_results(network *net, char *filename, float sensitivity, int grid
         {
             for(j = 0; j < l.classes; ++j)
             {
-                probs[i][j] /= 2.0;
+                probs[i][j] /= 1.5;
             }
         }
     }
