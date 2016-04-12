@@ -119,6 +119,7 @@ RESULT_LENGTH = None
 
 
 def _update_globals(grid=GRID, class_list=CLASS_LIST):
+    print('UPDATING GLOBALS: %r, %r' % (grid, class_list, ))
     global PROB_RESULT_LENGTH, BBOX_RESULT_LENGTH, RESULT_LENGTH
     PROB_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * len(class_list)
     BBOX_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * 4
