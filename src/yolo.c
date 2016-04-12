@@ -439,7 +439,7 @@ void test_yolo_results(network *net, char *filename, float sensitivity, int grid
     char buff[256];
     char *input = buff;
     int i, j, prob_offset, offset;
-    float nms=.8;
+    float nms=.25;
     int num = l.side*l.side*l.n;
     if(grid)
     {
