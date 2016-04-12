@@ -118,8 +118,9 @@ BBOX_RESULT_LENGTH = None
 RESULT_LENGTH = None
 
 
-def _update_globals(grid=GRID, class_list=CLASS_LIST):
-    print('UPDATING GLOBALS: %r, %r' % (grid, class_list, ))
+def _update_globals(grid=GRID, class_list=CLASS_LIST, verbose=True):
+    if verbose:
+        print('UPDATING GLOBALS: %r, %r' % (grid, class_list, ))
     global PROB_RESULT_LENGTH, BBOX_RESULT_LENGTH, RESULT_LENGTH
     PROB_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * len(class_list)
     BBOX_RESULT_LENGTH = grid * SIDES * SIDES * BOXES * 4
@@ -129,7 +130,7 @@ def _update_globals(grid=GRID, class_list=CLASS_LIST):
 #=================================
 # Load Dynamic Library
 #=================================
-_update_globals()
+_update_globals(verbose=False)
 DARKNET_CLIB = _load_c_shared_library(METHODS)
 
 
