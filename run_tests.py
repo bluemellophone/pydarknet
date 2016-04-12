@@ -40,7 +40,7 @@ def run_tests():
     # dark.train(voc_path, weight_path)
 
     config_filepath = '/media/hdd/jason/yolo/weights/detect.yolo.12.cfg'
-    weight_filepath = '/media/hdd/jason/yolo/weights/detect.yolo.12.40000.weights'
+    weight_filepath = '/media/hdd/jason/yolo/weights/detect.yolo.12.weights'
     # config_filepath = '/Users/bluemellophone/Desktop/detect.yolo.12.cfg'
     # weight_filepath = '/Users/bluemellophone/Desktop/detect.yolo.12.weights'
     dark = Darknet_YOLO_Detector(config_filepath=config_filepath, weight_filepath=weight_filepath)
