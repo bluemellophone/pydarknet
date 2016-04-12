@@ -502,7 +502,29 @@ void test_yolo_results(network *net, char *filename, float sensitivity, int grid
     free_image(sized_super);
     free_image(sized);
 
+    if(grid)
+    {
+        for(i = 0; i < num / 10; ++i)
+        {
+            for(j = 0; j < l.classes; ++j)
+            {
+                probs[i][j] *= 2.0;
+            }
+        }
+    }
+
     if (nms) do_nms_sort(boxes, probs, num, l.classes, nms);
+
+    if(grid)
+    {
+        for(i = 0; i < num / 10; ++i)
+        {
+            for(j = 0; j < l.classes; ++j)
+            {
+                probs[i][j] /= 2.0;
+            }
+        }
+    }
 
     int result_length = num * (l.classes + 4);
     int result_offset = result_index * result_length;
