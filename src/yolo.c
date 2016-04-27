@@ -558,8 +558,16 @@ void test_yolo_results(network *net, char *filename, float sensitivity, int grid
         width = right - left;
         height = bot - top;
 
-        if(width < 0) width = 0;
-        if(height < 0) height = 0;
+        if(width < 1)
+        {
+            width = 1;
+            if(left + width > im.w-1) left = im.w-1-width;
+        }
+        if(height < 1)
+        {
+            height = 1;
+            if(top + height > im.h-1) top = im.h-1-height;
+        }
 
         results[result_offset + offset + 0] = left;
         results[result_offset + offset + 1] = top;
