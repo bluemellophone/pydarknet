@@ -286,7 +286,7 @@ class Darknet_YOLO_Detector(object):
         print('class_list = %r' % (class_list, ))
         print('num_images = %r' % (num_images, ))
 
-        return manifest_filename, num_images
+        return manifest_filename, num_images, config_filepath, class_filepath
 
     def train(dark, voc_path, weight_path, **kwargs):
         """
@@ -332,7 +332,8 @@ class Darknet_YOLO_Detector(object):
         ut.ensuredir(weight_path)
 
         # Setup training files and folder structures
-        manifest_filename, num_images = dark._train_setup(voc_path, weight_path)
+        results = dark._train_setup(voc_path, weight_path)
+        manifest_filename, num_images, config_filepath, class_filepath = results
 
         # Run training algorithm
         params_list = [
@@ -348,6 +349,7 @@ class Darknet_YOLO_Detector(object):
             print('\n\n[pydarknet py] *************************************')
             print('[pydarknet py] Training Completed')
             print('[pydarknet py] Weight file saved to: %s' % (weight_filepath, ))
+        return weight_filepath, config_filepath, class_filepath
 
     def detect(dark, input_gpath_list, **kwargs):
         """
