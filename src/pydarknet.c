@@ -41,6 +41,12 @@ PYTHON_DARKNET network* init(char *config_filepath, char *weight_filepath, int v
     return holder;
 }
 
+PYTHON_DARKNET void unload(network *net)
+{
+    free_network(*net);
+    free(net);
+}
+
 PYTHON_DARKNET void train(network *net, char *train_image_manifest, char *weight_path, int num_input, char* weight_filepath, int verbose, int quiet)
 {
     printf("\n[pydarknet c] Training YOLO network on %d images\n", num_input);

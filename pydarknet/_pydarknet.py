@@ -67,6 +67,10 @@ METHODS['init'] = ([
     C_INT,           # quiet
 ], C_OBJ)
 
+METHODS['unload'] = ([
+    C_OBJ,           # network
+], None)
+
 METHODS['train'] = ([
     C_OBJ,           # network
     C_CHAR,          # train_image_manifest
@@ -150,7 +154,6 @@ class Darknet_YOLO_Detector(object):
             Returns:
                 detector (object): the Darknet YOLO Detector object
         """
-
         dark.CLASS_LIST = None
         if config_filepath in ['default', 'v2', None]:
             config_filepath = ut.grab_file_url(DEFAULT_CONFIG_URL, appname='pydarknet')
@@ -172,6 +175,10 @@ class Darknet_YOLO_Detector(object):
         if dark.verbose and not dark.quiet:
             print('[pydarknet py] New Darknet_YOLO Object Created')
 
+    def __del__(dark):
+        dark._unload()
+        # super(Darknet_YOLO_Detector, dark).__del__()
+
     def _load(dark, config_filepath, weight_filepath):
         begin = time.time()
         params_list = [
@@ -184,6 +191,13 @@ class Darknet_YOLO_Detector(object):
         conclude = time.time()
         if not dark.quiet:
             print('[pydarknet py] Took %r seconds to load' % (conclude - begin, ))
+
+    def _unload(dark):
+        params_list = [
+            dark.net,
+        ]
+        DARKNET_CLIB.unload(*params_list)
+        dark.net = None
 
     def _train_setup(dark, voc_path, weight_path):
 
@@ -546,16 +560,19 @@ def test_pydarknet():
     input_gpath_list = input_gpath_list[:5]
 
     results_list = dark.detect(input_gpath_list)
-    for filename, result_list in results_list:
+
+    for filename, result_list in list(results_list):
         print(filename)
         for result in result_list:
             print('    Found: %r' % (result, ))
 
-    # ibs database from mtest
-    voc_path = '/media/extend/jason/Dataset/'
-    weight_path = '/media/extend/jason/weights'
-    ut.ensuredir(weight_path)
-    dark.train(voc_path, weight_path)
+    del dark
+
+    # # ibs database from mtest
+    # voc_path = '/media/extend/jason/Dataset/'
+    # weight_path = '/media/extend/jason/weights'
+    # ut.ensuredir(weight_path)
+    # dark.train(voc_path, weight_path)
 
 if __name__ == '__main__':
     r"""
