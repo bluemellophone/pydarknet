@@ -439,7 +439,7 @@ class Darknet_YOLO_Detector(object):
         # Run training algorithm
         batch_size = params['batch_size']
         del params['batch_size']  # Remove this value from params
-        batch_num = int(len(input_gpath_list) / batch_size) + 1
+        batch_num = int(np.ceil(len(input_gpath_list) / float(batch_size)))
         # Detect for each batch
         for batch in ut.ProgressIter(range(batch_num), lbl='[pydarknet py]', freq=1, invert_rate=True):
             begin = time.time()
