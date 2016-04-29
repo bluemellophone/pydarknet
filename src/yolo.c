@@ -574,6 +574,10 @@ void test_yolo_results(network *net, char *filename, float sensitivity, int grid
         results[result_offset + offset + 2] = width;
         results[result_offset + offset + 3] = height;
     }
+
+    free(boxes);
+    for(j = 0; j < num; ++j) free(probs[j]);
+    free(probs);
 }
 
 void export_yolo_to_numpy(char *cfgfile, char *weightfile)
