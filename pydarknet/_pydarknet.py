@@ -1,10 +1,8 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
-# Standard
 from collections import OrderedDict as odict
-# import multiprocessing
 import ctypes as C
 from six.moves import zip, range
-# Scientific
 from os.path import abspath, basename, join, exists
 import utool as ut
 import numpy as np
@@ -144,7 +142,7 @@ DARKNET_CLIB = _load_c_shared_library(METHODS)
 class Darknet_YOLO_Detector(object):
 
     def __init__(dark, config_filepath=None, weight_filepath=None,
-                 verbose=VERBOSE_DARK, quiet=QUIET_DARK):
+                 class_filepath=None, verbose=VERBOSE_DARK, quiet=QUIET_DARK):
         """
             Create the C object for the PyDarknet YOLO detector.
 
@@ -166,6 +164,11 @@ class Darknet_YOLO_Detector(object):
             weight_filepath = ut.grab_file_url(DEFAULT_WEIGHTS_URL, appname='pydarknet')
         elif weight_filepath in ['v1', 'old', 'original']:
             weight_filepath = ut.grab_file_url(OLD_DEFAULT_WEIGHTS_URL, appname='pydarknet')
+
+        if class_filepath is None:
+            dark.CLASS_LIST = CLASS_LIST
+        else:
+            class_filepath
 
         dark.verbose = verbose
         dark.quiet = quiet
@@ -304,33 +307,33 @@ class Darknet_YOLO_Detector(object):
 
     def train(dark, voc_path, weight_path, **kwargs):
         """
-            Train a new forest with the given positive chips and negative chips.
+        Train a new forest with the given positive chips and negative chips.
 
-            Args:
-                train_pos_chip_path_list (list of str): list of positive training chips
-                train_neg_chip_path_list (list of str): list of negative training chips
-                trees_path (str): string path of where the newly trained trees are to be saved
+        Args:
+            train_pos_chip_path_list (list of str): list of positive training chips
+            train_neg_chip_path_list (list of str): list of negative training chips
+            trees_path (str): string path of where the newly trained trees are to be saved
 
-            Kwargs:
-                chips_norm_width (int, optional): Chip normalization width for resizing;
-                    the chip is resized to have a width of chips_norm_width and
-                    whatever resulting height in order to best match the original
-                    aspect ratio; defaults to 128
+        Kwargs:
+            chips_norm_width (int, optional): Chip normalization width for resizing;
+                the chip is resized to have a width of chips_norm_width and
+                whatever resulting height in order to best match the original
+                aspect ratio; defaults to 128
 
-                    If both chips_norm_width and chips_norm_height are specified,
-                    the original aspect ratio of the chip is not respected
-                chips_norm_height (int, optional): Chip normalization height for resizing;
-                    the chip is resized to have a height of chips_norm_height and
-                    whatever resulting width in order to best match the original
-                    aspect ratio; defaults to None
+                If both chips_norm_width and chips_norm_height are specified,
+                the original aspect ratio of the chip is not respected
+            chips_norm_height (int, optional): Chip normalization height for resizing;
+                the chip is resized to have a height of chips_norm_height and
+                whatever resulting width in order to best match the original
+                aspect ratio; defaults to None
 
-                    If both chips_norm_width and chips_norm_height are specified,
-                    the original aspect ratio of the chip is not respected
-                verbose (bool, optional): verbose flag; defaults to object's verbose or
-                    selectively enabled for this function
+                If both chips_norm_width and chips_norm_height are specified,
+                the original aspect ratio of the chip is not respected
+            verbose (bool, optional): verbose flag; defaults to object's verbose or
+                selectively enabled for this function
 
-            Returns:
-                None
+        Returns:
+            None
         """
         # Default values
         params = odict([
@@ -367,36 +370,55 @@ class Darknet_YOLO_Detector(object):
 
     def detect(dark, input_gpath_list, **kwargs):
         """
-            Run detection with a given loaded forest on a list of images
+        Run detection with a given loaded forest on a list of images
 
-            Args:
-                input_gpath_list (list of str): the list of image paths that you want
-                    to test
-                config_filepath (str, optional): the network definition for YOLO to use
-                weight_filepath (str, optional): the network weights for YOLO to use
+        Args:
+            input_gpath_list (list of str): the list of image paths that you want
+                to test
+            config_filepath (str, optional): the network definition for YOLO to use
+            weight_filepath (str, optional): the network weights for YOLO to use
 
-            Kwargs:
-                sensitivity (float, optional): the sensitivity of the detector, which
-                    accepts a value between 0.0 and 1.0; defaults to 0.0
-                batch_size (int, optional): the number of images to test at a single
-                    time in paralell (if None, the number of CPUs is used); defaults to
-                    None
-                verbose (bool, optional): verbose flag; defaults to object's verbose or
-                    selectively enabled for this function
+        Kwargs:
+            sensitivity (float, optional): the sensitivity of the detector, which
+                accepts a value between 0.0 and 1.0; defaults to 0.0
+            batch_size (int, optional): the number of images to test at a single
+                time in paralell (if None, the number of CPUs is used); defaults to
+                None
+            verbose (bool, optional): verbose flag; defaults to object's verbose or
+                selectively enabled for this function
 
-            Yields:
-                (str, (list of dict)): tuple of the input image path and a list
-                    of dictionaries specifying the detected bounding boxes
+        Yields:
+            (str, (list of dict)): tuple of the input image path and a list
+                of dictionaries specifying the detected bounding boxes
 
-                    The dictionaries returned by this function are of the form:
-                        xtl (int): the top left x position of the bounding box
-                        ytl (int): the top left y position of the bounding box
-                        width (int): the width of the bounding box
-                        height (int): the hiehgt of the bounding box
-                        class (str): the most probably class detected by the network
-                        confidence (float): the confidence that this bounding box is of
-                            the class specified by the trees used during testing
+                The dictionaries returned by this function are of the form:
+                    xtl (int): the top left x position of the bounding box
+                    ytl (int): the top left y position of the bounding box
+                    width (int): the width of the bounding box
+                    height (int): the hiehgt of the bounding box
+                    class (str): the most probably class detected by the network
+                    confidence (float): the confidence that this bounding box is of
+                        the class specified by the trees used during testing
 
+        CommandLine:
+            python -m pydarknet._pydarknet detect --show
+
+        Example:
+            >>> # DISABLE_DOCTEST
+            >>> from pydarknet._pydarknet import *  # NOQA
+            >>> dpath = '/media/raid/work/WS_ALL/localizer_backup/'
+            >>> weight_filepath = join(dpath, 'detect.yolo.2.39000.weights')
+            >>> config_filepath = join(dpath, 'detect.yolo.2.cfg')
+            >>> dark = Darknet_YOLO_Detector(config_filepath=config_filepath,
+            >>>                              weight_filepath=weight_filepath)
+            >>> input_gpath_list = [u'/media/raid/work/WS_ALL/_ibsdb/images/0cb41f1e-d746-3052-ded4-555e11eb718b.jpg']
+            >>> kwargs = {}
+            >>> (input_gpath, result_list_) = dark.detect(input_gpath_list)
+            >>> result = ('(input_gpath, result_list_) = %s' % (ut.repr2((input_gpath, result_list_)),))
+            >>> print(result)
+            >>> ut.quit_if_noshow()
+            >>> import plottool as pt
+            >>> ut.show_if_requested()
         """
         # Default values
         params = odict([
@@ -410,8 +432,7 @@ class Darknet_YOLO_Detector(object):
         ])
         # params.update(kwargs)
         ut.update_existing(params, kwargs)
-        class_list = params['class_list']
-        del params['class_list']  # Remove this value from params
+        class_list = params.pop('class_list')
 
         if params['grid']:
             _update_globals(grid=10, class_list=class_list)
@@ -433,15 +454,15 @@ class Darknet_YOLO_Detector(object):
         params['quiet'] = int(params['quiet'])
 
         # Data integrity
-        assert params['sensitivity'] >= 0 and params['sensitivity'] <= 1.0, \
-            'Threshold must be in the range [0, 1].'
+        assert params['sensitivity'] >= 0 and params['sensitivity'] <= 1.0, (
+            'Threshold must be in the range [0, 1].')
 
         # Run training algorithm
         batch_size = params['batch_size']
         del params['batch_size']  # Remove this value from params
         batch_num = int(np.ceil(len(input_gpath_list) / float(batch_size)))
         # Detect for each batch
-        for batch in ut.ProgressIter(range(batch_num), lbl='[pydarknet py]', freq=1, invert_rate=True):
+        for batch in ut.ProgIter(range(batch_num), lbl='[pydarknet py]', freq=1, invert_rate=True):
             begin = time.time()
             start = batch * batch_size
             end   = start + batch_size
@@ -490,49 +511,21 @@ class Darknet_YOLO_Detector(object):
             params['results_array'] = None
 
     # Pickle functions
+    # TODO: Just use __getstate__ and __setstate__ instead
     def dump(dark, file):
-        """
-            UNIMPLEMENTED
-
-            Args:
-                file (object)
-
-            Returns:
-                None
-        """
+        """ UNIMPLEMENTED """
         pass
 
     def dumps(dark):
-        """
-            UNIMPLEMENTED
-
-            Returns:
-                string
-        """
+        """ UNIMPLEMENTED """
         pass
 
     def load(dark, file):
-        """
-            UNIMPLEMENTED
-
-            Args:
-                file (object)
-
-            Returns:
-                detector (object)
-        """
+        """ UNIMPLEMENTED """
         pass
 
     def loads(dark, string):
-        """
-            UNIMPLEMENTED
-
-            Args:
-                string (str)
-
-            Returns:
-                detector (object)
-        """
+        """ UNIMPLEMENTED """
         pass
 
 
@@ -545,18 +538,22 @@ def test_pydarknet():
     Example:
         >>> # ENABLE_DOCTEST
         >>> from pydarknet._pydarknet import *  # NOQA
-        >>> result = test_pydarknet()
-        >>> print(result)
+        >>> test_pydarknet()
+        >>> ut.quit_if_noshow()
+        >>> ut.show_if_requested()
     """
     # import ibeis
     # from ibeis.other.detectfuncs import export_to_xml
-
     dark = Darknet_YOLO_Detector()
-
-    input_gpath_list = [
-        abspath(join('_test', 'test_%05d.jpg' % (i, )))
-        for i in range(1, 76)
-    ]
+    # TODO: move test images out of the repo. Grab them via utool
+    import pydarknet
+    from os.path import dirname
+    pydarknet_repo = dirname(ut.get_module_dir(pydarknet))
+    input_gpath_list = ut.ls_images(join(pydarknet_repo, '_test'), full=True)
+    #input_gpath_list = [
+    #    abspath(join('_test', 'test_%05d.jpg' % (i, )))
+    #    for i in range(1, 76)
+    #]
     input_gpath_list = input_gpath_list[:5]
 
     results_list = dark.detect(input_gpath_list)
@@ -568,11 +565,79 @@ def test_pydarknet():
 
     del dark
 
-    # # ibs database from mtest
-    # voc_path = '/media/extend/jason/Dataset/'
-    # weight_path = '/media/extend/jason/weights'
-    # ut.ensuredir(weight_path)
-    # dark.train(voc_path, weight_path)
+
+def test_pydarknet2():
+    r"""
+    CommandLine:
+        python -m pydarknet._pydarknet test_pydarknet2 --show
+
+    Example:
+        >>> # DISABLE_DOCTEST
+        >>> from pydarknet._pydarknet import *  # NOQA
+        >>> output_fpaths = test_pydarknet2()
+        >>> ut.quit_if_noshow()
+        >>> import plottool as pt
+        >>> inter = pt.MultiImageInteraction(output_fpaths)
+        >>> inter.start()
+        >>> ut.show_if_requested()
+    """
+    import pydarknet
+    import cv2
+    from pydarknet import Darknet_YOLO_Detector
+    from os.path import join, basename, dirname
+
+    test_config_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg'
+    test_weight_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.weights'
+    config_filepath = ut.grab_file_url(test_config_url)
+    weight_filepath = ut.grab_file_url(test_weight_url)
+    dark = Darknet_YOLO_Detector(config_filepath=config_filepath, weight_filepath=weight_filepath)
+
+    # TODO: move test images out of the repo. Grab them via utool
+    pydarknet_repo = dirname(ut.get_module_dir(pydarknet))
+    input_gpath_list = ut.ls_images(join(pydarknet_repo, '_test'), full=True)
+
+    temp_path = ut.ensure_app_resource_dir('pydarknet', 'temp')
+    ut.delete(temp_path)
+    ut.ensuredir(temp_path)
+
+    results_list1 = list(dark.detect(input_gpath_list, grid=False))
+    results_list2 = list(dark.detect(input_gpath_list, grid=True))
+
+    zipped = zip(results_list1, results_list2)
+    output_fpaths = []
+    for (filename, result_list1), (filename2, result_list2) in zipped:
+        print(filename)
+        image = cv2.imread(filename)
+        for result in result_list1:
+            if result['confidence'] < 0.2:
+                continue
+            print('    Found 1: %r' % (result, ))
+            xtl = int(result['xtl'])
+            ytl = int(result['ytl'])
+            xbr = int(result['xtl'] + result['width'])
+            ybr = int(result['ytl'] + result['height'])
+            cv2.rectangle(image, (xtl, ytl), (xbr, ybr), (255, 140, 0), 5)
+        for result in result_list2:
+            if result['confidence'] < 0.2:
+                continue
+            print('    Found 2: %r' % (result, ))
+            xtl = int(result['xtl'])
+            ytl = int(result['ytl'])
+            xbr = int(result['xtl'] + result['width'])
+            ybr = int(result['ytl'] + result['height'])
+            cv2.rectangle(image, (xtl, ytl), (xbr, ybr), (0, 140, 255), 3)
+        for result in result_list1:
+            if result['confidence'] < 0.2:
+                continue
+            xtl = int(result['xtl'])
+            ytl = int(result['ytl'])
+            xbr = int(result['xtl'] + result['width'])
+            ybr = int(result['ytl'] + result['height'])
+            cv2.rectangle(image, (xtl, ytl), (xbr, ybr), (255, 140, 0), 1)
+        temp_filepath = join(temp_path, basename(filename))
+        cv2.imwrite(temp_filepath, image)
+        output_fpaths.append(temp_filepath)
+    return output_fpaths
 
 if __name__ == '__main__':
     r"""
