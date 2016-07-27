@@ -168,7 +168,8 @@ class Darknet_YOLO_Detector(object):
         if class_filepath is None:
             dark.CLASS_LIST = CLASS_LIST
         else:
-            class_filepath
+            dark.CLASS_LIST = ut.readfrom(ut.truepath(class_filepath)).split('\n')[:-1]
+            #class_filepath
 
         dark.verbose = verbose
         dark.quiet = quiet
@@ -566,15 +567,30 @@ def test_pydarknet():
     del dark
 
 
-def test_pydarknet2():
+def test_pydarknet2(input_gpath_list=None, config_filepath=None,
+                    weight_filepath=None, class_filepath=None):
     r"""
     CommandLine:
         python -m pydarknet._pydarknet test_pydarknet2 --show
 
+        python -m pydarknet test_pydarknet2 --show \
+            --input_gpath_list=["~/work/WS_ALL/_ibsdb/images/0cb41f1e-d746-3052-ded4-555e11eb718b.jpg"] \
+            --config_filepath="~/work/WS_ALL/localizer_backup/detect.yolo.2.cfg" \
+            --weight_filepath="~/work/WS_ALL/localizer_backup/detect.yolo.2.39000.weights" \
+            --class_filepath="~/work/WS_ALL/localizer_backup/detect.yolo.2.cfg.classes"
+
+    Ignore:
+        >>> # Load in the second command line strings for faster testing
+        >>> from pydarknet._pydarknet import *  # NOQA
+        >>> cmdstr = ut.get_func_docblocks(test_pydarknet2)['CommandLine:'].split('\n\n')[1]
+        >>> ut.aug_sysargv(cmdstr)
+
     Example:
         >>> # DISABLE_DOCTEST
         >>> from pydarknet._pydarknet import *  # NOQA
-        >>> output_fpaths = test_pydarknet2()
+        >>> funckw = ut.argparse_funckw(test_pydarknet2)
+        >>> exec(ut.execstr_dict(funckw), globals())
+        >>> output_fpaths = test_pydarknet2(**funckw)
         >>> ut.quit_if_noshow()
         >>> import plottool as pt
         >>> inter = pt.MultiImageInteraction(output_fpaths)
@@ -586,15 +602,28 @@ def test_pydarknet2():
     from pydarknet import Darknet_YOLO_Detector
     from os.path import join, basename, dirname
 
-    test_config_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg'
-    test_weight_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.weights'
-    config_filepath = ut.grab_file_url(test_config_url)
-    weight_filepath = ut.grab_file_url(test_weight_url)
-    dark = Darknet_YOLO_Detector(config_filepath=config_filepath, weight_filepath=weight_filepath)
+    if config_filepath is None:
+        test_config_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.cfg'
+        config_filepath = ut.grab_file_url(test_config_url)
+    if weight_filepath is None:
+        test_weight_url = 'https://lev.cs.rpi.edu/public/models/detect.yolo.12.weights'
+        weight_filepath = ut.grab_file_url(test_weight_url)
+    if class_filepath is None:
+        pass
 
-    # TODO: move test images out of the repo. Grab them via utool
-    pydarknet_repo = dirname(ut.get_module_dir(pydarknet))
-    input_gpath_list = ut.ls_images(join(pydarknet_repo, '_test'), full=True)
+    if input_gpath_list is None:
+        # TODO: move test images out of the repo. Grab them via utool
+        pydarknet_repo = dirname(ut.get_module_dir(pydarknet))
+        input_gpath_list = ut.ls_images(join(pydarknet_repo, '_test'), full=True)
+
+    input_gpath_list = [ut.truepath(gpath) for gpath in input_gpath_list]
+    config_filepath = ut.truepath(config_filepath)
+    weight_filepath = ut.truepath(weight_filepath)
+    class_filepath = ut.truepath(class_filepath)
+
+    dark = Darknet_YOLO_Detector(config_filepath=config_filepath,
+                                 weight_filepath=weight_filepath,
+                                 class_filepath=class_filepath)
 
     temp_path = ut.ensure_app_resource_dir('pydarknet', 'temp')
     ut.delete(temp_path)
