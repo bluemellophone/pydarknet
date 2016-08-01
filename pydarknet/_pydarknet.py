@@ -91,7 +91,7 @@ METHODS['detect'] = ([
 ], None)
 
 DEFAULT_CLASS = 'UNKNOWN'
-CLASS_LIST = [
+DEFAULT_CLASS_LIST = [
     'lion',
     'zebra_plains',
     'hippopotamus',
@@ -105,7 +105,7 @@ CLASS_LIST = [
     'bird',
     'building',
 ]
-OLD_CLASS_LIST = [
+OLD_DEFAULT_CLASS_LIST = [
     'elephant_savanna',
     'giraffe_reticulated',
     'giraffe_masai',
@@ -120,7 +120,7 @@ BBOX_RESULT_LENGTH = None
 RESULT_LENGTH = None
 
 
-def _update_globals(grid=GRID, class_list=CLASS_LIST, verbose=True):
+def _update_globals(grid=GRID, class_list=DEFAULT_CLASS_LIST, verbose=True):
     if verbose:
         print('UPDATING GLOBALS: %r, %r' % (grid, class_list, ))
     global PROB_RESULT_LENGTH, BBOX_RESULT_LENGTH, RESULT_LENGTH
@@ -152,12 +152,12 @@ class Darknet_YOLO_Detector(object):
             Returns:
                 detector (object): the Darknet YOLO Detector object
         """
-        dark.CLASS_LIST = None
+        dark.class_list = None
         if config_filepath in ['default', 'v2', None]:
             config_filepath = ut.grab_file_url(DEFAULT_CONFIG_URL, appname='pydarknet')
-            dark.CLASS_LIST = CLASS_LIST
+            dark.class_list = DEFAULT_CLASS_LIST
         elif config_filepath in ['v1', 'old', 'original']:
-            dark.CLASS_LIST = OLD_CLASS_LIST
+            dark.class_list = OLD_DEFAULT_CLASS_LIST
             config_filepath = ut.grab_file_url(OLD_DEFAULT_CONFIG_URL, appname='pydarknet')
 
         if weight_filepath in ['default', 'v2', None]:
@@ -166,9 +166,9 @@ class Darknet_YOLO_Detector(object):
             weight_filepath = ut.grab_file_url(OLD_DEFAULT_WEIGHTS_URL, appname='pydarknet')
 
         if class_filepath is None:
-            dark.CLASS_LIST = CLASS_LIST
+            dark.class_list = DEFAULT_CLASS_LIST
         else:
-            dark.CLASS_LIST = ut.readfrom(ut.truepath(class_filepath)).split('\n')[:-1]
+            dark.class_list = ut.readfrom(ut.truepath(class_filepath)).split('\n')[:-1]
             #class_filepath
 
         dark.verbose = verbose
@@ -424,7 +424,7 @@ class Darknet_YOLO_Detector(object):
         # Default values
         params = odict([
             ('batch_size',    None),
-            ('class_list',    dark.CLASS_LIST),
+            ('class_list',    dark.class_list),
             ('sensitivity',   0.2),
             ('grid',          False),
             ('results_array', None),  # This value always gets overwritten
